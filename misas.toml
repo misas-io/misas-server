@@ -1,0 +1,14 @@
+#where the server will try to bind for incoming connections 
+[server]
+host = "0.0.0.0"
+port = "8084"
+subscription_port = "8085"
+
+[database]
+  #main database
+  [database.mongo]
+  host = "0.0.0.0"
+  port = "3004"
+
+[logs]
+stdout = true

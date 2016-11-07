@@ -1,23 +1,32 @@
 import express from 'express';
 import { graphqlExpress, graphiqlExpress } from 'graphql-server-express';
-import bodyParser from 'body-parser';
-import cors from 'cors';
+import { addErrorLoggingToSchema } from 'graphql-tools';
 import { createServer } from 'http';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { printSchema } from 'graphql/utilities/schemaPrinter';
+import { subscriptionManager } from './api/subscriptions';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import settings from './settings';
+import log from './log';
+import schema from './api/schema';
 
-import { subscriptionManager } from './data/subscriptions';
-import schema from './data/schema';
+//check settings before initialization
+const server = settings.server;
 
-const GRAPHQL_PORT = 8080;
+const GRAPHQL_PORT = 8085;
 const WS_PORT = 8090;
 
+const logger = { log: (e) => log.error('GraphQL schema error', e.stack) };
 const graphQLServer = express().use('*', cors());
 
+// setup graph ql server
 graphQLServer.use('/graphql', bodyParser.json(), graphqlExpress({
   schema,
   context: {},
 }));
+
+addErrorLoggingToSchema(schema, logger);
 
 graphQLServer.use('/graphiql', graphiqlExpress({
   endpointURL: '/graphql',
@@ -28,8 +37,8 @@ graphQLServer.use('/schema', (req, res) => {
   res.send(printSchema(schema));
 });
 
-graphQLServer.listen(GRAPHQL_PORT, () => console.log(
-  `GraphQL Server is now running on http://localhost:${GRAPHQL_PORT}/graphql`
+graphQLServer.listen(server.port, () => log.info(
+  `GraphQL Server is now running on http://${server.host}:${server.port}/graphql`
 ));
 
 // WebSocket server for subscriptions
@@ -38,8 +47,8 @@ const websocketServer = createServer((request, response) => {
   response.end();
 });
 
-websocketServer.listen(WS_PORT, () => console.log( // eslint-disable-line no-console
-  `Websocket Server is now running on http://localhost:${WS_PORT}`
+websocketServer.listen(server.subscription_port, () => log.info( // eslint-disable-line no-console
+  `Websocket Server is now running on http://${server.host}:${server.subscription_port}`
 ));
 
 // eslint-disable-next-line

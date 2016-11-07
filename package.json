@@ -34,7 +34,10 @@
     "graphql-subscriptions": "^0.2.0",
     "graphql-tools": "^0.8.0",
     "lodash": "^4.15.0",
-    "subscriptions-transport-ws": "^0.2.2"
+    "mongoose": "^4.6.6",
+    "subscriptions-transport-ws": "^0.2.2",
+    "toml": "^2.3.0",
+    "winston": "^2.3.0"
   },
   "devDependencies": {
     "babel-cli": "6.16.0",
