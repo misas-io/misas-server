@@ -13,10 +13,6 @@ import schema from './api/schema';
 
 //check settings before initialization
 const server = settings.server;
-
-const GRAPHQL_PORT = 8085;
-const WS_PORT = 8090;
-
 const logger = { log: (e) => log.error('GraphQL schema error', e.stack) };
 const graphQLServer = express().use('*', cors());
 

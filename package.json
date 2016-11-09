@@ -1,9 +1,10 @@
 {
-  "name": "apollo-starter-kit",
+  "name": "misas-server",
   "version": "0.1.0",
-  "description": "Minimal set of code to write a GraphQL server with Apollo graphql-tools",
+  "description": "misas server api",
   "scripts": {
     "start": "nodemon ./server.js --exec babel-node",
+    "migrate": "babel-node ./node_modules/mongoose-migrate/bin/migrate",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint ."
   },
@@ -34,6 +35,7 @@
     "graphql-subscriptions": "^0.2.0",
     "graphql-tools": "^0.8.0",
     "lodash": "^4.15.0",
+    "mongodb": "^2.2.11",
     "mongoose": "^4.6.6",
     "subscriptions-transport-ws": "^0.2.2",
     "toml": "^2.3.0",
@@ -52,6 +54,7 @@
     "eslint-config-airbnb": "^12.0.0",
     "eslint-plugin-import": "^2.0.1",
     "eslint-plugin-react": "^6.4.1",
+    "mongoose-migrate": "^0.2.4",
     "nodemon": "^1.9.1"
   },
   "eslintConfig": {

@@ -19,4 +19,6 @@ if(_.isEqual(settings, {}))
   }
 }
 
+export const Mongo = settings.database.mongo;
+export const MongoURL = `mongodb://${Mongo.host}:${Mongo.port}/${Mongo.name}`;
 export default settings;
