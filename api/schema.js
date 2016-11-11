@@ -1,41 +1,32 @@
 import { makeExecutableSchema } from 'graphql-tools';
-
-import resolvers from './resolvers';
+import GrpSchema from '@/api/mongo/grp/schema';
+import resolvers from '@/api/resolvers';
 
 const schema = `
-type Author {
-  id: Int! # the ! means that every author object _must_ have an id
-  firstName: String
-  lastName: String
-  posts: [Post] # the list of Posts by this author
-}
-
-type Post {
-  id: Int!
-  title: String
-  author: Author
-  votes: Int
-}
-
-# the schema allows the following query:
-type Query {
-  posts: [Post]
-}
-
-# this schema allows the following mutation:
-type Mutation {
-  upvotePost (
-    postId: Int!
-  ): Post
-}
-
-type Subscription {
-  postUpvoted: Post
-}
-
+  schema {
+    query: RootQuery
+    mutation: Mutation
+    subscription: Subscription
+  }
+  type RootQuery {
+    grp: [Grp]
+  }
+  type Mutation {
+    addGrp(
+      #name of the grp
+      name: String!,
+      #type of the grp
+      type: String!,
+      #location of the grp 
+      #location: Location
+    ): Grp
+  }
+  type Subscription {
+    postUpvoted(grpId: String!): Grp
+  }
 `;
 
 export default makeExecutableSchema({
-  typeDefs: schema,
+  typeDefs: [schema, GrpSchema],
   resolvers,
 });

@@ -1,5 +1,5 @@
 import { MongoClient } from 'mongodb';
-import { MongoURL } from './../settings';
+import { MongoURL } from '@/settings';
 import assert from 'assert';
 
 

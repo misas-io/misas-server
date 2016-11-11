@@ -6,6 +6,12 @@
     "stage-0"
   ],
   "plugins": [
-    "babel-plugin-inline-import"
+    "babel-plugin-inline-import",
+    [
+      "babel-root-import", 
+      {
+        "rootPathPrefix": "@"
+      }
+    ]
   ]
 }

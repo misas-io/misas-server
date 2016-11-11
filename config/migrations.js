@@ -1,4 +1,4 @@
-import { MongoURL } from './../settings';
+import { MongoURL } from '@/settings';
 
 module.exports = { 
   development: {
