@@ -1,7 +1,9 @@
+import PaginationSchema from '@/api/misc/pagination/schema';
 
 export const GrpSchema = `
 # A church object stored in MongoDB
 type Grp {
+  _id: String!
   type: String!
   name: String!
   location: Location 
@@ -29,7 +31,28 @@ type Address {
   #zip code in the us but it can be any postal code
   postal_code: Int!
 }
+
+input LocationI {
+	address: AddressI!
+  #latitude
+  lat: Float
+  #longitude
+  lon: Float
+}
+
+input AddressI {
+  #the address lines contain the actual street address 
+  address_line_1: String!
+  address_line_2: String
+  address_line_3: String
+  country: String!
+  city: String!
+  state: String!
+  #zip code in the us but it can be any postal code
+  postal_code: Int!
+}
+
 `;
 
-export default () => [ GrpSchema ];
+export default () => [ GrpSchema, PaginationSchema ];
 

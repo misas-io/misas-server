@@ -3,14 +3,14 @@
   "version": "0.1.0",
   "description": "misas server api",
   "scripts": {
-    "start": "nodemon ./server.js --exec babel-node",
+    "start": "nodemon ./server.js --delay 2.5 --exec babel-node",
     "migrate": "babel-node ./node_modules/mongoose-migrate/bin/migrate",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint ."
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/apollostack/apollo-starter-kit.git"
+    "url": "https://github.com/misas-io/misas-server"
   },
   "keywords": [
     "Node.js",
@@ -20,12 +20,12 @@
     "Apollo",
     "Meteor"
   ],
-  "author": "Jonas Helfer <jonas@helfer.email>",
+  "author": "victor.j.fdez@gmail.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/apollostack/apollo-starter-kit/issues"
+    "url": "https://github.com/misas-io/misas-server/issues"
   },
-  "homepage": "https://github.com/apollostack/apollo-starter-kit#readme",
+  "homepage": "https://github.com/misas-io/misas-server#readme",
   "dependencies": {
     "bluebird": "^3.4.6",
     "body-parser": "^1.15.2",

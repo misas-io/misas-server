@@ -1,12 +1,27 @@
 import { pubsub } from './subscriptions';
 import { Grp } from '@/api/mongo/grp/model';
+import log from '@/log';
 
 
 const resolveFunctions = {
   RootQuery: {
-    grp() {
-      return Grp.find({}).exec();
+    grp(_, { _id }) {
+      return Grp.findById(_id).exec();
     },
+    grps(_, { pagination }) {
+      let query = Grp.find({});
+      if(pagination){
+        query = query.
+          limit(pagination.size).
+          skip(pagination.size*pagination.page);
+      }
+      log.info(pagination)
+      return query.exec();
+    },
+    grpsSearch(_, { q, pagination }) {
+      log.info(pagination)
+      return Grp.find({}).exec();
+    }
   },
   Mutation: {
     addGrp(_, { name, type, location }) {

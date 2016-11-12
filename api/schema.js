@@ -9,7 +9,16 @@ const schema = `
     subscription: Subscription
   }
   type RootQuery {
-    grp: [Grp]
+    grp(
+      _id: String!
+    ): Grp
+    grps(
+      pagination: PaginationI
+    ): [Grp]
+    grpsSearch(
+      q: String!,
+      pagination: PaginationI
+    ): [Grp]
   }
   type Mutation {
     addGrp(
@@ -18,7 +27,7 @@ const schema = `
       #type of the grp
       type: String!,
       #location of the grp 
-      #location: Location
+      location: LocationI!
     ): Grp
   }
   type Subscription {
