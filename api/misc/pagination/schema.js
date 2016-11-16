@@ -12,4 +12,4 @@ const PaginationSchema = `
   }
 `;
 
-export default () => [ PaginationSchema ];
+export default [ PaginationSchema ];

@@ -1,3 +1,4 @@
+import { toGlobalId } from '@/misc/global_id';
 import { mongoose } from '@/connectors/mongodb_orm';
 
 const Schema = mongoose.Schema;

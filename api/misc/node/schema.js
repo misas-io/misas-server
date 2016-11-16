@@ -6,4 +6,4 @@ const NodeSchema = `
   }
 `;
 
-export default () => [ NodeSchema ];
+export default [ NodeSchema ];

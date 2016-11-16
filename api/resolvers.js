@@ -24,7 +24,6 @@ const resolveFunctions = {
       return {};
     },
   },
-  ...GrpResolvers,
 };
 
-export default resolveFunctions;
+export default merge(resolveFunctions, GrpResolvers);

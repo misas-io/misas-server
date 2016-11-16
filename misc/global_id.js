@@ -1,4 +1,6 @@
-
+import { isString } from 'lodash';
+import log from '@/log';
+import assert from 'assert';
 
 export function toGlobalId(type, localId){
   assert.notEqual(null, type);
@@ -7,7 +9,7 @@ export function toGlobalId(type, localId){
     type: type,
     localId: localId
   }));
-  return buffer.toString('base64');
+  return (buffer.toString('base64'));
 };
 
 export function fromGlobalId(globalId){

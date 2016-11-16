@@ -1,10 +1,10 @@
 import PaginationSchema from '@/api/misc/pagination/schema';
 import NodeSchema from '@/api/misc/node/schema';
 
-export const GrpSchema = `
+const GrpSchema = `
 # A god realted place stored in MongoDB
-type Grp implemented Node {
-  id: String!
+type Grp implements Node {
+  id: ID!
   type: GrpType!
   name: String!
   location: Location 
@@ -26,9 +26,9 @@ type Religion {
 type Location {
 	address: Address
   #latitude
-  lat: Float!
+  lat: Float
   #longitude
-  lon: Float!
+  lon: Float
 }
 
 type Address {
@@ -37,10 +37,10 @@ type Address {
   address_line_2: String
   address_line_3: String
   country: String!
-  city: String!
-  state: String!
+  city: String
+  state: String
   #zip code in the us but it can be any postal code
-  postal_code: Int!
+  postal_code: Int
 }
 
 enum SortTypes {
@@ -63,10 +63,10 @@ input AddressI {
   address_line_2: String
   address_line_3: String
   country: String!
-  city: String!
-  state: String!
+  city: String
+  state: String
   #zip code in the us but it can be any postal code
-  postal_code: Int!
+  postal_code: Int
 }
 
 input PointI {
@@ -82,5 +82,5 @@ input RectangleI {
 
 `;
 
-export default () => [ GrpSchema, ...PaginationSchema, ...NodeSchema ];
+export default [ GrpSchema, ...PaginationSchema, ...NodeSchema ];
 

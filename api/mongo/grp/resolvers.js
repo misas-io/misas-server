@@ -1,10 +1,20 @@
+import { each } from 'lodash';
 import { Grp } from '@/api/mongo/grp/model';
+import { toGlobalId, fromGlobalId } from '@/misc/global_id';
 import log from '@/log';
 
 export const GrpQueryResolvers = {
   grp(_, {id}){
-    return Grp.findById(_id).exec();
+    let { type, localId } = fromGlobalId(id);
+    return Grp.findById(localId).exec();
   },
+  searchGrps(_, {name}){
+    return Grp.find({
+      $text: {
+        $search: name || "",
+      }
+    }).exec();
+  }
 };
 
 export const GrpMutationResolvers = {
@@ -20,38 +30,36 @@ export const GrpMutationResolvers = {
 };
 
 export const GrpResolvers = {
+  Node: {
+    __resolveType(root, context, info){
+      return 'Grp';
+    },
+  },
   Grp: {
+    id(grp) {
+      return toGlobalId("grps", grp._id);
+    },
     contributors(grp) {
       return grp.contributors || [];
     },
     location(grp) {
       return grp.location || {
+        lat: null,
+        lon: null,
       };
     },
   },
   Location: {
     address(loc) {
-      log.info(loc);
-      if(loc.address) {
-        let address = loc.address;
-        return loc.address || {
-          address_line_1: address.address_line_1 || "",
-          address_line_2: address.address_line_2 || "",
-          country: address.country || "",
-          city: address.city || "",
-          state: address.state || "NA",
-          postal_code: address.postal_code 
-        };
-      } else {
-        return {
-          address_line_1: "",
-          address_line_2: "",
-          country: "",
-          city: "",
-          state: "NA",
-          postal_code: -1 
-        };
-      }
+      return loc.address || {
+        address_line_1: address.address_line_1 || "",
+        address_line_2: address.address_line_2 || "",
+        address_line_3: address.address_line_3 || null,
+        country: address.country || "Not available",
+        city: address.city || null,
+        state: address.state || null, 
+        postal_code: address.postal_code || null,
+      };
     },
   },
 }

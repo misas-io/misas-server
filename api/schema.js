@@ -13,7 +13,7 @@ const schema = `
     grp(id: ID!): Grp 
     searchGrps(
       name: String,
-      rectangle: ReactangleI
+      rectangle: RectangleI
       sortBy: [SortTypes]
     ): [Grp]
     # node query
