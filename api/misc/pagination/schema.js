@@ -1,6 +1,5 @@
 
 const PaginationSchema = `
-
   type Pagination {
     page: Int!
     size: Int!

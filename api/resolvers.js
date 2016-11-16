@@ -1,57 +1,30 @@
+import { merge, isString } from 'lodash';
 import { pubsub } from './subscriptions';
 import { Grp } from '@/api/mongo/grp/model';
+import { GrpQueryResolvers, GrpMutationResolvers, GrpResolvers } from '@/api/mongo/grp/resolvers'
+import { fromGlobalId } from '@/misc/global_id';
 import log from '@/log';
 
 
 const resolveFunctions = {
-  RootQuery: {
-    grp(_, { _id }) {
-      return Grp.findById(_id).exec();
-    },
-    grps(_, { pagination }) {
-      let query = Grp.find({});
-      if(pagination){
-        query = query.
-          limit(pagination.size).
-          skip(pagination.size*pagination.page);
+  RootQuery: merge(
+    {
+      node(_, {id}) {
+        let { type, localId } = fromGlobalId(id);
+        log.info(`getting node(${type},${localId})`);
+        
       }
-      log.info(pagination)
-      return query.exec();
-    },
-    grpsSearch(_, { q, pagination }) {
-      log.info(pagination)
-      return Grp.find({}).exec();
-    }
-  },
-  Mutation: {
-    addGrp(_, { name, type, location }) {
-      //add the new grp to mongodb
-      let grp = new Grp({
-        type: type,
-        name: name,
-        location: location || {},
-      });
-      return grp.save();
-    },
-  },
+    }, 
+    GrpQueryResolvers),
+  Mutation: merge(
+    {}, 
+    GrpMutationResolvers),
   Subscription: {
     postUpvoted(post) {
       return {};
     },
   },
-  Grp: {
-    contributors(grp) {
-      return grp.contributors;
-    },
-    location(grp) {
-      return grp.location;
-    },
-  },
-  Location: {
-    address(loc) {
-      return loc.address;
-    },
-  },
+  ...GrpResolvers,
 };
 
 export default resolveFunctions;

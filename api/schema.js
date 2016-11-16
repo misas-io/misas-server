@@ -9,19 +9,19 @@ const schema = `
     subscription: Subscription
   }
   type RootQuery {
-    grp(
-      _id: String!
-    ): Grp
-    grps(
-      pagination: PaginationI
+    # god related place queries
+    grp(id: ID!): Grp 
+    searchGrps(
+      name: String,
+      rectangle: ReactangleI
+      sortBy: [SortTypes]
     ): [Grp]
-    grpsSearch(
-      q: String!,
-      pagination: PaginationI
-    ): [Grp]
+    # node query
+    node(id: ID!): Node
   }
+
   type Mutation {
-    addGrp(
+    createGrp(
       #name of the grp
       name: String!,
       #type of the grp
@@ -30,12 +30,14 @@ const schema = `
       location: LocationI!
     ): Grp
   }
+
   type Subscription {
     postUpvoted(grpId: String!): Grp
   }
+
 `;
 
 export default makeExecutableSchema({
-  typeDefs: [schema, GrpSchema],
+  typeDefs: [schema, ...GrpSchema],
   resolvers,
 });
