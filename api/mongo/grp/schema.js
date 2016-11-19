@@ -7,6 +7,7 @@ type Grp implements Node {
   id: ID!
   type: GrpType!
   name: String!
+	address: Address
   location: Location 
   contributors: [ String ]
   created: String
@@ -24,11 +25,9 @@ type Religion {
 
 # The exact lat, lon location of the church
 type Location {
-	address: Address
-  #latitude
-  lat: Float
-  #longitude
-  lon: Float
+  type: String
+  #lat then lon
+  coordinates: [ Float! ]
 }
 
 type Address {
@@ -50,11 +49,9 @@ enum SortTypes {
 }
 
 input LocationI {
-	address: AddressI!
-  #latitude
-  lat: Float
-  #longitude
-  lon: Float
+  type: String!
+  #lat the lon
+  coordinates: [ Float! ]!
 }
 
 input AddressI {
@@ -69,14 +66,8 @@ input AddressI {
   postal_code: Int
 }
 
-input PointI {
-  lat: Float!
-  lon: Float!
-}
-
-input RectangleI {
-  upperLeft: PointI!
-  lowerRight: PointI!
+input PolygonI {
+  coordinates: [ Float! ]!
 }
 
 

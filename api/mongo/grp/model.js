@@ -10,18 +10,24 @@ const grpSchema = new Schema({
   },
   name:  String,
   description: String,
+  address: {
+    address_line_1: String,
+    address_line_2: { type: String, default: "" },
+    address_line_3: String,
+    country: String,
+    city: String,
+    state: String,
+    postal_code: Number,
+  },
   location: {
-    address: {
-      address_line_1: String,
-      address_line_2: { type: String, default: "" },
-      address_line_3: String,
-      country: String,
-      city: String,
-      state: String,
-      postal_code: Number,
+    type: { 
+      type: String,
     },
-    lat: Number,
-    lon: Number,
+    // lat is the first coordinate
+    // lon is the second coordinate
+    coordinates: [ { 
+      type: Number,
+    } ],
   },
   schedules: [ 
     {

@@ -1,4 +1,4 @@
-import { each } from 'lodash';
+import { each, set, isString } from 'lodash';
 import { Grp } from '@/api/mongo/grp/model';
 import { toGlobalId, fromGlobalId } from '@/misc/global_id';
 import log from '@/log';
@@ -8,22 +8,42 @@ export const GrpQueryResolvers = {
     let { type, localId } = fromGlobalId(id);
     return Grp.findById(localId).exec();
   },
-  searchGrps(_, {name}){
-    return Grp.find({
-      $text: {
-        $search: name || "",
+  searchGrps(_, {name, polygon, sortBy}){
+    let scoreOption = {};
+    let sortByOption = {};
+    if(isString(sortBy)){
+      switch(sortBy){
+        case "RELEVANCE": 
+          set(sortByOption,'score.$meta', "textScore");
+          set(scoreOption, 'score.$meta', "textScore");
+          break;
+        default:
+          log.error("searchGrps: sortBy not supported");
       }
-    }).exec();
+    }
+    return Grp
+      .find(
+        {
+          $text: {
+            $search: name || "",
+          },
+        }, 
+        scoreOption
+      )
+      .sort(
+        sortByOption
+      ).exec();
   }
 };
 
 export const GrpMutationResolvers = {
-  createGrp(_, { name, type, location }) {
+  createGrp(_, { name, type, address, location }) {
     //add the new grp to mongodb
     let grp = new Grp({
       type: type,
       name: name,
-      location: location || {},
+      address: address,
+      location: location,
     });
     return grp.save();
   }
@@ -44,22 +64,20 @@ export const GrpResolvers = {
     },
     location(grp) {
       return grp.location || {
-        lat: null,
-        lon: null,
+        type: null,
+        coordinates: [],
+      };
+    },
+    address(grp) {
+      return grp.address || {
+        address_line_1: grp.address.address_line_1 || "",
+        address_line_2: grp.address.address_line_2 || "",
+        address_line_3: grp.address.address_line_3 || null,
+        country: grp.address.country || "Not available",
+        city: grp.address.city || null,
+        state: grp.address.state || null, 
+        postal_code: grp.address.postal_code || null,
       };
     },
   },
-  Location: {
-    address(loc) {
-      return loc.address || {
-        address_line_1: address.address_line_1 || "",
-        address_line_2: address.address_line_2 || "",
-        address_line_3: address.address_line_3 || null,
-        country: address.country || "Not available",
-        city: address.city || null,
-        state: address.state || null, 
-        postal_code: address.postal_code || null,
-      };
-    },
-  },
-}
+};

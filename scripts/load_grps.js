@@ -34,6 +34,15 @@ fs.readFile(program.file, { encoding: 'utf8'}, (err, data) => {
 
   load.start();
   eachLimit(parroquias, 40, (grp, callback) => {
+    let lat = get(grp, 'location.lat', null);
+    let lon = get(grp, 'location.lon', null);
+    let location = null;
+    if(lat != null && lon != null){
+      location = {
+        type: "Point",
+        coordinates: [lat, lon],
+      };
+    }
     let newGrp = {
       name: get(grp, 'name', 'Unknown'),
       type: {
@@ -43,20 +52,17 @@ fs.readFile(program.file, { encoding: 'utf8'}, (err, data) => {
       group: {
         name: get(grp, 'diocesis_name', null),
       },
-      location: {
-        address: {
-          address_line_1: get(grp, 'address_line_1', ''),
-          address_line_2: get(grp, 'address_line_2', null),
-          address_line_3: get(grp, 'address_line_3', null),
-          country: 'mexico',
-          phone: get(grp, 'phone', null),
-          state: get(grp, 'state.name', null),
-          city: get(grp, 'city.name', null),
-          postal_code: get(grp, 'postal_code', null),
-        },
-        lat: get(grp, 'location.lat', null),
-        lon: get(grp, 'location.lon', null),
+      address: {
+        address_line_1: get(grp, 'address_line_1', ''),
+        address_line_2: get(grp, 'address_line_2', null),
+        address_line_3: get(grp, 'address_line_3', null),
+        country: 'mexico',
+        phone: get(grp, 'phone', null),
+        state: get(grp, 'state.name', null),
+        city: get(grp, 'city.name', null),
+        postal_code: get(grp, 'postal_code', null),
       },
+      location: location,
       href: get(grp, 'href', ''),
     };
     let preGrp = new Grp(newGrp);

@@ -13,8 +13,8 @@ const schema = `
     grp(id: ID!): Grp 
     searchGrps(
       name: String,
-      rectangle: RectangleI
-      sortBy: [SortTypes]
+      polygon: PolygonI
+      sortBy: SortTypes
     ): [Grp]
     # node query
     node(id: ID!): Node
