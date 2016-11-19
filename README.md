@@ -1,25 +1,35 @@
-# Hello World server
+# misas-server
 
-The server that is used for the examples on dev.apollodata.com.
+# Setup
 
-This is a really simple GraphQL server that uses [Apollo Server](https://github.com/apollostack/apollo-server) and [GraphQL Tools](https://github.com/apollostack/graphql-tools) to serve a simple schema.
+## Configuration
 
-It uses a very simple in-memory database, so if you restart the server or change the code, the data will reset.
+misas.toml
 
-## Installation
+## DB Setup
 
-Clone the repository and run `npm install`
+All of the following commands use misas.toml configuration to connect to the DB
 
-```
-git clone https://github.com/apollostack/frontpage-server
-cd frontpage-server
-npm install
-```
-
-## Starting the server
+### Install MongoDB migrations
 
 ```
-npm start
+# to load 
+npm run migrate up
 ```
 
-The server will run on port 8080. You can change this by editing `server.js`.
+### Load the GRPs
+
+```bash
+# to load a json file containing parroquias into meteor
+npm run load_grps -- --file ./misas/parroquias.json
+```
+
+## Run Server
+
+The following command will start the misas-server
+
+```bash
+npm run start
+```
+
+To see the graphql schema connect to http://<host>:<port>/graphiql/
