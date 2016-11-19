@@ -32,4 +32,4 @@ The following command will start the misas-server
 npm run start
 ```
 
-To see the graphql schema connect to http://<host>:<port>/graphiql/
+To see the graphql schema connect to http://host:port/graphiql/
