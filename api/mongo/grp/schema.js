@@ -1,7 +1,9 @@
-import PaginationSchema from '@/api/misc/pagination/schema';
 import NodeSchema from '@/api/misc/node/schema';
+import EdgeSchema from '@/api/misc/edge/schema';
+import EventSchema from '@/api/mongo/event/schema';
 
 const GrpSchema = `
+
 # A god realted place stored in MongoDB
 type Grp implements Node {
   id: ID!
@@ -12,6 +14,8 @@ type Grp implements Node {
   contributors: [ String ]
   created: String
   updated: String
+  # contains recurring events
+  events: [ Event ]!
 }
 
 type GrpType {
@@ -43,8 +47,11 @@ type Address {
 }
 
 enum SortTypes {
+  # sort by search terms relevance
   RELEVANCE
+  # sort by church closest
   CLOSEST 
+  # sort by church name
   ALPHABETICAL 
 }
 
@@ -67,11 +74,10 @@ input AddressI {
 }
 
 input PolygonI {
-  coordinates: [ Float! ]!
+  coordinates: [ [ Float! ]! ]!
 }
-
 
 `;
 
-export default [ GrpSchema, ...PaginationSchema, ...NodeSchema ];
+export default [ GrpSchema, ...NodeSchema, ...EdgeSchema, ...EventSchema ];
 

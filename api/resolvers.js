@@ -12,7 +12,12 @@ const resolveFunctions = {
       node(_, {id}) {
         let { type, localId } = fromGlobalId(id);
         log.info(`getting node(${type},${localId})`);
-        
+        switch(type){
+          case "grps":
+            return GrpQueryResolvers.grp(undefined, {id: id});
+          default:
+            log.error("unsupported node");
+        }          
       }
     }, 
     GrpQueryResolvers),

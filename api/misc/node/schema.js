@@ -1,5 +1,4 @@
 
-
 const NodeSchema = `
   interface Node {
     id: ID!

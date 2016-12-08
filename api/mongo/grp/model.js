@@ -1,50 +1,185 @@
+import Promise from 'bluebird';
+import Ajv from 'ajv';
+import moment from 'moment';
 import { toGlobalId } from '@/misc/global_id';
-import { mongoose } from '@/connectors/mongodb_orm';
+import { getConnection } from '@/connectors/mongodb';
+import log from '@/log';
 
-const Schema = mongoose.Schema;
+const ajv = new Ajv();
 
-const grpSchema = new Schema({
-  type: { 
-    name: String,
-    religion: Schema.Types.ObjectId 
-  },
-  name:  String,
-  description: String,
-  address: {
-    address_line_1: String,
-    address_line_2: { type: String, default: "" },
-    address_line_3: String,
-    country: String,
-    city: String,
-    state: String,
-    postal_code: Number,
-  },
-  location: {
-    type: { 
-      type: String,
-    },
-    // lat is the first coordinate
-    // lon is the second coordinate
-    coordinates: [ { 
-      type: Number,
-    } ],
-  },
-  schedules: [ 
-    {
-      type: String,
-      value: String,
-      active: Boolean
-    }
+export const GrpSchema = {
+  type: "object",
+  required: [
+    "name",
+    "description",
+    "address",
+    "updated",
+    "created"
   ],
-  contributors: [Schema.Types.ObjectId],
-  created: { 
-    type: Date, default: Date.now 
+  properties: {
+    _id: {
+      oneOf: [
+        { type: "string" },
+        { type: "object" },
+      ],
+    },
+    type: { 
+      type: "object",
+      properties: {
+        name: { type: "string" },
+        religion: { type: "string" }, 
+      }
+    },
+    group: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        name: { type: "string" },
+      },
+    },
+    name:  { type: "string" },
+    description: { type: "string" },
+    address: {
+      additionalProperties: false,
+      properties: {
+        address_line_1: { type: "string" },
+        address_line_2: { type: "string" },
+        address_line_3: { type: "string" },
+        phone: { type: "string" },
+        country: { type: "string" },
+        city: { type: "string" },
+        state: { type: "string" },
+        postal_code: { type: "string" },
+      },
+    },
+    location: {
+      additionalProperties: false,
+      properties: {
+        type: { 
+          type: "string",
+        },
+        // lat is the first coordinate
+        // lon is the second coordinate
+        coordinates: { 
+          type: "array",
+          items: {
+            type: "number",
+          },
+        },
+      }
+    },
+    schedules: {
+      type: "array", 
+      items: {
+        type: "object",
+        required: [
+          "duration",
+          "recurrences"
+        ],
+        properties: {
+          name: { type: "string" },
+          duration: { type: "integer" },
+          recurrences: {
+            type: "array",
+            items: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                // SECOND schedule types
+                s: { type: "array", items: { type: "integer",}, },
+                s_a: { type: "array", items: { type: "integer",},},
+                s_b: { type: "array", items: { type: "integer",},},
+                // MINUTE schedule types
+                m: { type: "array", items: { type: "integer",},},
+                m_a: { type: "array", items: { type: "integer",},},
+                m_b: { type: "array", items: { type: "integer",},},
+                // HOUR schedule types
+                h: { type: "array", items: { type: "integer",},},
+                h_a: { type: "array", items: { type: "integer",},},
+                h_b: { type: "array", items: { type: "integer",},},
+                // DAY schedule types
+                // int representation of day of the week 1-7 
+                d: { type: "array", items: { type: "integer",},},
+                d_a: { type: "array", items: { type: "integer",},},
+                d_b: { type: "array", items: { type: "integer",},},
+                // int representation of day of the month 0-31 ( 0 for last )
+                D: { type: "array", items: { type: "integer",},},
+                D_a: { type: "array", items: { type: "integer",},},
+                D_b: { type: "array", items: { type: "integer",},},
+                // int representation of the integer of types a 
+                // day has ocurred within a week 0-5 ( 0 for last )
+                dc: { type: "array", items: { type: "integer",},},
+                dc_a: { type: "array", items: { type: "integer",},},
+                dc_b: { type: "array", items: { type: "integer",},},
+                // int representation of day of the year 0-366 ( 0 for last )
+                dw: { type: "array", items: { type: "integer",},},
+                dw_a: { type: "array", items: { type: "integer",},},
+                dw_b: { type: "array", items: { type: "integer",},},
+                // MONTH schedule types
+                M: { type: "array", items: { type: "integer",},},
+                M_a: { type: "array", items: { type: "integer",},},
+                M_b: { type: "array", items: { type: "integer",},},
+                // MONTH schedule types
+                Y: { type: "array", items: { type: "integer",},},
+                Y_a: { type: "array", items: { type: "integer",},},
+                Y_b: { type: "array", items: { type: "integer",},},
+              },
+            },
+          },
+        },
+      },
+    },
+    href: { type: "string", },
+    contributors: {
+      type: "array",
+      items: {
+        type: "string",
+      },
+    },
+    created: { 
+      type: "string",
+      format: "date-time", 
+    },
+    updated: { 
+      type: "string",
+      format: "date-time",
+    }
   },
-  updated: { 
-    type: Date, default: Date.now 
+  additionalProperties: false,
+};
+
+export const grpValidate = ajv.compile(GrpSchema);
+
+export async function createGrp(newGrp){
+  let grps = await getGrpCollection();
+  addGrpTimestamps(newGrp);
+  //validate the input fields
+  let valid = grpValidate(newGrp); 
+  if(!valid){
+    log.error(newGrp);
+    throw grpValidate.errors; 
   }
-}); 
+  //insert the new grp
+  return grps.insert(newGrp);
+};
 
-const Grp = mongoose.model('grp', grpSchema);
+export function addGrpTimestamps(grp){
+  let now = moment().toISOString();
+  grp.created = now;
+  grp.updated = now;
+};
 
-export { Grp }
+export function updateGrpTimestamps(grp){
+  let now = moment().toISOString();
+  grp.updated = now;
+};
+
+var db;
+
+export async function getGrpCollection(){
+  if(!db){
+    db = await getConnection();      
+  } 
+  return db.collection('grps');
+};
+

@@ -1,6 +1,7 @@
 import Promise from 'bluebird';
-import { get } from 'lodash';
-import { Grp } from '@/api/mongo/grp/model';
+import later from 'later';
+import { get, set, map, isInteger, toInteger, toNumber, flattenDeep } from 'lodash';
+import { createGrp } from '@/api/mongo/grp/model';
 import fs from 'fs';
 import eachLimit from 'async/eachLimit';
 import log from '@/log';
@@ -34,17 +35,60 @@ fs.readFile(program.file, { encoding: 'utf8'}, (err, data) => {
 
   load.start();
   eachLimit(parroquias, 40, (grp, callback) => {
+    //setup location
     let lat = get(grp, 'location.lat', null);
     let lon = get(grp, 'location.lon', null);
-    let location = null;
+    let location = {
+    };
     if(lat != null && lon != null){
       location = {
-        type: "Point",
-        coordinates: [lat, lon],
+        location: {
+          type: "Point",
+          coordinates: [toNumber(lon), toNumber(lat)],
+        },
       };
+      //log.info(location);
+    } else {
+      //set(location, 'location.type', undefined);
+      //set(location, 'location.coordinates', undefined);
+      //log.info({});
+    }
+    //setup events 
+    let days = get(grp, 'schedule.days');
+    let schedules;
+    if(days){
+      schedules = map(days, (day) => {
+        let dw = get(day, 'id');
+        if(!isInteger(dw)){
+          log.error("schedule.days.id is not a number");
+        }
+        dw = dw == 7 ? 1 : dw + 1;  
+        let events = get(day, 'events');
+        let newEvents = map(events, (event) => {
+          let hour = toInteger(get(event, 'start_time.hour'));
+          let mins = toInteger(get(event, 'start_time.mins'));
+          let isPM = get(event, 'start_time.meridiem') == "PM";
+          hour = isPM ? hour + 12 : hour;
+          let recurrences = later
+            .parse.recur()
+            .on(dw).dayOfWeek()
+            .on(hour).hour()
+            .on(mins).minute().schedules;
+          return {
+            name: get(event, 'type', ''),
+            duration: 60,
+            recurrences: recurrences,
+          }
+        });
+        return [ newEvents ];
+      });
+      schedules = flattenDeep(schedules);
+    } else {
+      schedules = [];
     }
     let newGrp = {
       name: get(grp, 'name', 'Unknown'),
+      description: "",
       type: {
         name: get(grp, 'parroquia_type', 'Parroquia'),
         //religion: 'Catolica',
@@ -54,28 +98,31 @@ fs.readFile(program.file, { encoding: 'utf8'}, (err, data) => {
       },
       address: {
         address_line_1: get(grp, 'address_line_1', ''),
-        address_line_2: get(grp, 'address_line_2', null),
-        address_line_3: get(grp, 'address_line_3', null),
+        address_line_2: get(grp, 'address_line_2', undefined),
+        address_line_3: get(grp, 'address_line_3', undefined),
         country: 'mexico',
-        phone: get(grp, 'phone', null),
-        state: get(grp, 'state.name', null),
-        city: get(grp, 'city.name', null),
-        postal_code: get(grp, 'postal_code', null),
+        phone: get(grp, 'phone', undefined),
+        state: get(grp, 'state.name', undefined),
+        city: get(grp, 'city.name', undefined),
+        postal_code: get(grp, 'postal_code', undefined),
       },
-      location: location,
+      ...location,
+      schedules: schedules,
       href: get(grp, 'href', ''),
     };
-    let preGrp = new Grp(newGrp);
-    preGrp.save((err, doc) => {
-      if(err)
-        console.log(err);
+    createGrp(newGrp).then((doc) => {
+      if(numUploaded % 100 == 0){
+        load.text = `loaded ${numUploaded}/${numTotal}`;
+      }
       numUploaded++;
-      load.text = `loaded ${numUploaded}/${numTotal}`;
       callback();
+    }).catch((err) => {
+      callback(err);
     });
   }, (err) => {
     if(err){
       log.error(err);
+      process.exit(-1);
     }
     load.text = "";
     load.stop();

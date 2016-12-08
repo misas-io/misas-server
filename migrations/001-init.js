@@ -1,32 +1,36 @@
-import { Connection } from '@/connectors/mongodb';
+import { getConnection } from '@/connectors/mongodb';
 import co from 'co';
 import assert from 'assert';
+import log from '@/log';
 
 export var up = function(next){
   //using a generator function with the co library
   //generated really clean code :D
-  co(function *(){
-    let db = yield Connection;
-    let collection = yield db.createCollection("grps", {});
-    //create index
-    yield collection.createIndex({name: "text"});
+  (async function(){
+    var db = await getConnection();
+    var collection = await db.createCollection("grps", {});
+    //create indexes
+    await collection.createIndex({name: "text"});
+    await collection.createIndex({location: "2dsphere"});
+    await collection.createIndex({"address.city": 1});
+    await collection.createIndex({"address.state": 1});
     next();
-  }).catch(
+  })().catch(
     (error) => {
-      assert.equal(null, error);
+      log.error(error);
     }
   );
 };
 
 export var down = function(next){
-  co(function *(){
-    let db = yield Connection;
-    yield db.dropCollection("grps", {});
+  (async function(){
+    var db = await getConnection();
+    await db.dropCollection("grps", {});
     //indexes will be dropped automatically
     next();
-  }).catch(
+  })().catch(
     (error) => {
-      assert.equal(null, error);
+      log.error(error);
     }
   );
 };
