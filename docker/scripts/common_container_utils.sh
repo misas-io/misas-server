@@ -93,6 +93,8 @@ ${service_name}:
     traefik.enable: ${stack} 
     traefik.domain: ${domains}
     traefik.port: 8084
+  volumes:
+    - $(get_misas_location):/usr/src/app/misas.toml
 $( 
   if [ ! -z "$override" ]; then
     echo "    traefik.override: $override"
