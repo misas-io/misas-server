@@ -103,6 +103,8 @@ $(
     - $(get_misas_location):/usr/src/app/misas.toml
 )
     io.rancher.scheduler.affinity:host_label: provider=scaleway
+  volumes:
+    - $(get_misas_location):/usr/src/app/misas.toml
 EOF
   )
   echo "$docker_compose" > docker-compose.yml
