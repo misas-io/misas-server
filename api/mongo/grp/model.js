@@ -1,3 +1,5 @@
+import { pick, map, size } from 'lodash';
+import later from 'later';
 import Promise from 'bluebird';
 import Ajv from 'ajv';
 import moment from 'moment';
@@ -172,6 +174,34 @@ export function addGrpTimestamps(grp){
 export function updateGrpTimestamps(grp){
   let now = moment().toISOString();
   grp.updated = now;
+};
+
+var limit = 100;
+
+export function getNextGrpDatesFromUntil(grp, count, from, until){
+  //get the schedules and create an array of theme
+  let schedules = map(grp.schedules, (event) => {
+    return event.recurrences[0];
+  });
+  if(size(schedules) == 0){
+    // no dates available
+    return [];
+  }
+  if(!count){
+    count = limit;
+  }
+  //create a composite schedule with all the schedules for
+  //this grp
+  let schedule = later.schedule({schedules: schedules});
+  if(!from && !until){
+    return schedule.next(count);
+  } else if(!from) {
+    return schedule.next(count, undefined, until);
+  } else if(!until){
+    return schedule.next(count, from);
+  } else {
+    return schedule.next(count, from, until);
+  }
 };
 
 var db;

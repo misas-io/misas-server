@@ -3,6 +3,7 @@ logs
 *.log
 npm-debug.log*
 misas/
+misas-server.us.*
 
 # Runtime data
 pids

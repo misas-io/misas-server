@@ -33,6 +33,10 @@ graphQLServer.use('/schema', (req, res) => {
   res.send(printSchema(schema));
 });
 
+graphQLServer.get('/health', (req, res) => {
+  res.send('healthy');
+});
+
 graphQLServer.listen(server.port, () => log.info(
   `GraphQL Server is now running on http://${server.host}:${server.port}/graphql`
 ));
