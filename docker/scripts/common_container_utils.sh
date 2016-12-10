@@ -93,14 +93,10 @@ ${service_name}:
     traefik.enable: ${stack} 
     traefik.domain: ${domains}
     traefik.port: 8084
-  volumes:
-    - $(get_misas_location):/usr/src/app/misas.toml
 $( 
   if [ ! -z "$override" ]; then
     echo "    traefik.override: $override"
   fi
-  volumes:
-    - $(get_misas_location):/usr/src/app/misas.toml
 )
     io.rancher.scheduler.affinity:host_label: provider=scaleway
   volumes:
