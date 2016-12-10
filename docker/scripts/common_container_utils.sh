@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-MISAS_URL="api.misas.us"
+MISAS_URL="api.misas.io"
 MISAS_PACKAGE="package.json"
 MISAS_BASE="misas-server"
 
@@ -60,13 +60,13 @@ gen_docker_rancher_compose(){
   case "${JOB_BASE_NAME}" in
     develop)
       service_name="$1"
-      override="dev.api.misas.us"
+      override="dev.api.misas.io"
       scale=1
       stack="stack"
       ;;
     master)
       service_name="$1"
-      override="api.misas.us"
+      override="api.misas.io"
       scale=2
       stack="stack"
       ;;
