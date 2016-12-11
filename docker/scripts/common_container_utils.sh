@@ -74,6 +74,20 @@ gen_docker_rancher_compose(){
   gen_rancher_compose "$service_name" "$scale"
 }
 
+gen_docker_compose_migrate(){
+docker_compose=$( cat <<EOF
+migrate:
+  command: run migrate up 
+  image: $(gen_image_name)
+  labels:
+    io.rancher.scheduler.affinity:host_label: provider=scaleway
+  volumes:
+    - $(get_misas_location):/usr/src/app/misas.toml
+EOF
+)
+  echo "$docker_compose" > docker-compose.yml
+}
+
 gen_docker_compose(){
   local service_name image domains override
   service_name=$1
@@ -100,6 +114,7 @@ EOF
   )
   echo "$docker_compose" > docker-compose.yml
 }
+
 
 gen_rancher_compose(){
   service_name=$1
