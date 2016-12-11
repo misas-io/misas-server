@@ -5,8 +5,6 @@ node {
   sh './docker/scripts/build_container.sh' 
   stage 'test'
   sh './docker/scripts/test_container.sh' 
-  stage 'migrate'
-  sh './docker/scripts/migrate.sh' 
   stage 'deploy assets'
   sh './docker/scripts/run_container.sh'
 }

@@ -99,6 +99,7 @@ gen_docker_compose(){
   docker_compose=$( cat <<EOF
 ${service_name}:
   image: ${image}
+  command: run "prod:server"
   labels:
     traefik.enable: ${stack} 
     traefik.domain: ${domains}

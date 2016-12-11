@@ -5,6 +5,7 @@
   "scripts": {
     "start": "nodemon ./server.js --delay 2.5 --exec babel-node",
     "server": "babel-node ./server.js",
+    "prod:server": "npm run migrate up && babel-node ./server.js",
     "migrate": "babel-node ./node_modules/mongoose-migrate/bin/migrate",
     "load_grps": "babel-node -- \"./scripts/load_grps.js\"",
     "test": "mocha --require babel-polyfill --compilers js:babel-core/register --reporter spec --full-trace './api/**/*.test.js'",
