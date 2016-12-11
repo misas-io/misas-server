@@ -80,6 +80,7 @@ migrate:
   command: run migrate up 
   image: $(gen_image_name)
   labels:
+    io.rancher.container.start_once: true
     io.rancher.scheduler.affinity:host_label: provider=scaleway
   volumes:
     - $(get_misas_location):/usr/src/app/misas.toml
