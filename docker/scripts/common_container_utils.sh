@@ -2,7 +2,7 @@
 
 MISAS_URL="api.misas.io"
 MISAS_PACKAGE="package.json"
-MISAS_BASE="misas-server"
+MISAS_BASE="misas"
 
 package_version(){
   cat "$MISAS_PACKAGE" | grep '"version"' | grep -o '\d\+\.\d\+\.\d\+' | head -1
@@ -17,16 +17,11 @@ gen_image_name(){
 }
 
 gen_service_name(){
-  local tmp
   echo "api"
 }
 
 gen_stack_name(){
-  echo "misas-server_${JOB_BASE_NAME%%-*}"
-}
-
-gen_container_name(){
-  echo "misas-server${JOB_BASE_NAME}"
+  echo "misas_${JOB_BASE_NAME%%-*}"
 }
 
 get_misas_location(){
@@ -34,10 +29,10 @@ get_misas_location(){
   ENV_FILE=""
   case "${JOB_BASE_NAME}" in
     develop)
-      ENV_FILE="misas-server.us.develop.toml"
+      ENV_FILE="misas.io.develop.toml"
       ;;
     master)
-      ENV_FILE="misas-server.us.master.toml"
+      ENV_FILE="misas.io.master.toml"
       ;;
     *)
       echo "ERROR: branch is not handled currently" 1>&2
