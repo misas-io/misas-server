@@ -1,4 +1,5 @@
 import Promise from 'bluebird';
+import ObjectID from 'mongodb';
 import { each, set, isString, isNil, isNumber, isInteger } from 'lodash';
 import { toGlobalId, fromGlobalId } from '@/misc/global_id';
 import { intFromBase64 } from '@/misc/base_64';
@@ -20,9 +21,13 @@ function checkPolygon(json){
 
 export const GrpQueryResolvers = {
   async grp(_, {id}){
-    let { type, localId } = fromGlobalId(id);
-    let grps = await getGrpCollection();
-    return grps.findOne({id: localId});
+    var { type, localId } = fromGlobalId(id);
+    log.info(`type: ${type}, id: ${localId}`);
+    var grps = await getGrpCollection();
+    localId = new ObjectID(localId);
+    var grp = await grps.findOne({_id: localId});
+    log.info(grp);
+    return grp;
   },
   async searchGrps(_, {name, polygon, sortBy, first, after}){
     // parameters validation
@@ -158,7 +163,6 @@ export const GrpResolvers = {
       };
     },
     nextEvents(grp, { next }) {
-      log.info(`nextEvent: ${next}`);
       let nextV = !isInteger(next) ? 10 : 0 <= next && next <= 100 ? next : 10;
       return getNextGrpDatesFromUntil(grp, next);
     }

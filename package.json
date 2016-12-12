@@ -36,9 +36,10 @@
     "body-parser": "^1.15.2",
     "co": "^4.6.0",
     "cors": "^2.8.0",
+    "eslint-plugin-jsx-a11y": "2.2.3",
     "express": "4.14.0",
     "geojson-validation": "^0.1.6",
-    "graphql": "^0.8.2",
+    "graphql": "0.7.0",
     "graphql-server-express": "^0.4.3",
     "graphql-subscriptions": "^0.2.0",
     "graphql-tools": "^0.8.0",
@@ -62,12 +63,14 @@
     "babel-preset-es2017": "^6.16.0",
     "babel-preset-react": "^6.16.0",
     "babel-preset-stage-0": "^6.16.0",
+    "babel-register": "^6.18.0",
     "babel-root-import": "^4.1.5",
     "cli-spinners": "^0.3.0",
     "commander": "^2.9.0",
     "eslint": "^3.8.1",
     "eslint-config-airbnb": "^12.0.0",
-    "eslint-plugin-import": "^2.0.1",
+    "eslint-plugin-babel": "^4.0.0",
+    "eslint-plugin-import": "1.16.0",
     "eslint-plugin-react": "^6.4.1",
     "mocha": "^3.2.0",
     "mongoose-migrate": "^0.2.4",
@@ -81,6 +84,14 @@
       "plugin:import/errors"
     ],
     "rules": {
+      "import/no-unresolved": [
+        2,
+        {
+          "ignore": [
+            "^[@]"
+          ]
+        }
+      ],
       "no-use-before-define": 0,
       "arrow-body-style": 0,
       "dot-notation": 0,

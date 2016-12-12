@@ -206,7 +206,7 @@ export function getNextGrpDatesFromUntil(grp, count, from, until){
   }
 };
 
-var db;
+var db = undefined;
 
 export async function getGrpCollection(){
   if(!db){

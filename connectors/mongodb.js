@@ -11,6 +11,7 @@ export function getConnection(){
   return MongoClient.connect(MongoURL)
   .then(
     (res) => {
+      log.info(`MongoDB connected at ${MongoURL}`);
       return res;
     }
   )
