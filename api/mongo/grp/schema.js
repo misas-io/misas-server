@@ -31,7 +31,7 @@ type Religion {
 type Location {
   type: String
   #lat then lon
-  coordinates: [ [ Float! ]! ]
+  coordinates: [ Float! ]
 }
 
 type Address {
@@ -58,7 +58,7 @@ enum SortTypes {
 input LocationI {
   type: String!
   #lat the lon
-  coordinates: [ [ Float! ]! ]!
+  coordinates: [ Float! ]!
 }
 
 input AddressI {

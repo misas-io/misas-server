@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "description": "misas server api",
   "scripts": {
-    "start": "nodemon ./server.js --delay 2.5 --exec babel-node",
     "server": "babel-node ./server.js",
     "prod:server": "npm run migrate up && babel-node ./server.js",
+    "dev:server": "nodemon ./server.js --delay 2.5 --exec babel-node",
     "migrate": "babel-node ./node_modules/mongoose-migrate/bin/migrate",
     "load_grps": "babel-node -- \"./scripts/load_grps.js\"",
     "test": "mocha --require babel-polyfill --compilers js:babel-core/register --reporter spec --full-trace './api/**/*.test.js'",
@@ -75,8 +75,7 @@
     "mocha": "^3.2.0",
     "mongoose-migrate": "^0.2.4",
     "nodemon": "^1.9.1",
-    "ora": "^0.3.0",
-    "webpack": "^1.14.0"
+    "ora": "^0.3.0"
   },
   "eslintConfig": {
     "parser": "babel-eslint",
