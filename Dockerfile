@@ -23,4 +23,4 @@ COPY server.js \
 
 RUN yarn install
 ENTRYPOINT ["npm"]
-CMD ["run", "server"]
+CMD ["run", "prod:server"]

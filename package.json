@@ -9,9 +9,6 @@
     "migrate": "babel-node ./node_modules/mongoose-migrate/bin/migrate",
     "load_grps": "babel-node -- \"./scripts/load_grps.js\"",
     "test": "mocha --require babel-polyfill --compilers js:babel-core/register --reporter spec --full-trace './api/**/*.test.js'",
-    "build:server": "webpack --config ./config/webpack.prod.js",
-    "build:server1": "webpack babel -d ./build/ ./server.js -d ./build/api/ './api/' -s",
-    "run:server": "node ./build/server.js",
     "lint": "eslint ."
   },
   "repository": {
