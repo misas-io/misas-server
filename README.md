@@ -1,25 +1,51 @@
-# Hello World server
+# misas-server
 
-The server that is used for the examples on dev.apollodata.com.
+# Setup
 
-This is a really simple GraphQL server that uses [Apollo Server](https://github.com/apollostack/apollo-server) and [GraphQL Tools](https://github.com/apollostack/graphql-tools) to serve a simple schema.
+## Configuration
 
-It uses a very simple in-memory database, so if you restart the server or change the code, the data will reset.
+misas.toml
 
-## Installation
+## DB Setup
 
-Clone the repository and run `npm install`
+All of the following commands use misas.toml configuration to connect to the DB. By default when developing on your computer, we recommend that you setup a mongo container on which to have the server connect.
 
-```
-git clone https://github.com/apollostack/frontpage-server
-cd frontpage-server
-npm install
+```bash
+docker run -d --name mongodb -p 27017:27017 mongo:3.4
 ```
 
-## Starting the server
+### Install MongoDB migrations
+
+Migrations should be run everytime before starting the server. The following command will run all the migration that have yet to be run until the last migration is complete.
 
 ```
-npm start
+# to load 
+npm run migrate up
 ```
 
-The server will run on port 8080. You can change this by editing `server.js`.
+### Load the GRPs
+
+```bash
+# to load a json file containing parroquias into meteor
+npm run load_grps -- --file ./misas/parroquias.json
+```
+
+## Run Server
+
+The following command will start the misas-server
+
+```bash
+npm run dev:server 
+```
+
+## Test Server
+
+Note: at the moment you might have to first have a connection to mongodb server before running the test. This is due to some design issues which will be addressed in the future. To run the test use the following command.
+
+```bash
+npm run test
+```
+
+This command will test any mocha file ending with `*.test.js` in the `api/` directory. Checkout `api/mongo/grp/model.test.js` for an example.
+
+To see the graphql schema connect to http://host:port/graphiql/

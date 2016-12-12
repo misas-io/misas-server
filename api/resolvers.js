@@ -1,42 +1,34 @@
+import { merge, isString } from 'lodash';
 import { pubsub } from './subscriptions';
 import { Grp } from '@/api/mongo/grp/model';
+import { GrpQueryResolvers, GrpMutationResolvers, GrpResolvers } from '@/api/mongo/grp/resolvers'
+import { fromGlobalId } from '@/misc/global_id';
+import log from '@/log';
 
 
 const resolveFunctions = {
-  RootQuery: {
-    grp() {
-      return Grp.find({}).exec();
-    },
-  },
-  Mutation: {
-    addGrp(_, { name, type, location }) {
-      //add the new grp to mongodb
-      let grp = new Grp({
-        type: type,
-        name: name,
-        location: location || {},
-      });
-      return grp.save();
-    },
-  },
+  RootQuery: merge(
+    {
+      node(_, {id}) {
+        let { type, localId } = fromGlobalId(id);
+        log.info(`getting node(${type},${localId})`);
+        switch(type){
+          case "grps":
+            return GrpQueryResolvers.grp(undefined, {id: id});
+          default:
+            log.error("unsupported node");
+        }          
+      }
+    }, 
+    GrpQueryResolvers),
+  Mutation: merge(
+    {}, 
+    GrpMutationResolvers),
   Subscription: {
     postUpvoted(post) {
       return {};
     },
   },
-  Grp: {
-    contributors(grp) {
-      return grp.contributors;
-    },
-    location(grp) {
-      return grp.location;
-    },
-  },
-  Location: {
-    address(loc) {
-      return loc.address;
-    },
-  },
 };
 
-export default resolveFunctions;
+export default merge(resolveFunctions, GrpResolvers);
