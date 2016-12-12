@@ -58,7 +58,7 @@ enum SortTypes {
 input LocationI {
   type: String!
   #lat the lon
-  coordinates: [ Float! ]
+  coordinates: [ Float! ]!
 }
 
 input AddressI {
