@@ -1896,7 +1896,13 @@ graphql-tools@^0.8.0:
   optionalDependencies:
     typed-graphql "^1.0.2"
 
-graphql@0.7.0, graphql@^0.7.0:
+graphql@0.7.2:
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/graphql/-/graphql-0.7.2.tgz#cc894a32823399b8a0cb012b9e9ecad35cd00f72"
+  dependencies:
+    iterall "1.0.2"
+
+graphql@^0.7.0:
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/graphql/-/graphql-0.7.0.tgz#5701492838edc6c673c184075eb8f06b11a7e451"
   dependencies:
