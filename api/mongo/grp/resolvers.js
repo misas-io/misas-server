@@ -1,9 +1,9 @@
 import Promise from 'bluebird';
-import { each, set, isString, isNil, isNumber } from 'lodash';
+import { each, set, isString, isNil, isNumber, isInteger } from 'lodash';
 import { toGlobalId, fromGlobalId } from '@/misc/global_id';
 import { intFromBase64 } from '@/misc/base_64';
 import { Grp } from '@/api/mongo/grp/model';
-import { createGrp, getGrpCollection } from '@/api/mongo/grp/model';
+import { createGrp, getGrpCollection, getNextGrpDatesFromUntil } from '@/api/mongo/grp/model';
 import { edgeify } from '@/api/mongo/utils/edgeification';
 import log from '@/log';
 import geoJsonValidation from 'geojson-validation';
@@ -157,5 +157,12 @@ export const GrpResolvers = {
         postal_code: grp.address.postal_code || null,
       };
     },
+    nextEvents(grp, { next }) {
+      log.info(`nextEvent: ${next}`);
+      let nextV = !isInteger(next) ? 10 : 0 <= next && next <= 100 ? next : 10;
+      return getNextGrpDatesFromUntil(grp, next);
+    }
   },
+  Recurrence: {
+  }
 };

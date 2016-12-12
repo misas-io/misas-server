@@ -7,6 +7,8 @@ import { toGlobalId } from '@/misc/global_id';
 import { getConnection } from '@/connectors/mongodb';
 import log from '@/log';
 
+later.date.localTime();
+
 const ajv = new Ajv();
 
 export const GrpSchema = {
