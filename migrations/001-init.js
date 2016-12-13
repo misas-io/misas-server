@@ -6,16 +6,16 @@ import log from '@/log';
 export var up = function(next){
   //using a generator function with the co library
   //generated really clean code :D
-  (async function(){
-    var db = await getConnection();
-    var collection = await db.createCollection("grps", {});
+  co(function* (){
+    var db = yield getConnection();
+    var collection = yield db.createCollection("grps", {});
     //create indexes
-    await collection.createIndex({name: "text"});
-    await collection.createIndex({location: "2dsphere"});
-    await collection.createIndex({"address.city": 1});
-    await collection.createIndex({"address.state": 1});
+    yield collection.createIndex({name: "text"});
+    yield collection.createIndex({location: "2dsphere"});
+    yield collection.createIndex({"address.city": 1});
+    yield collection.createIndex({"address.state": 1});
     next();
-  })().catch(
+  }).catch(
     (error) => {
       log.error(error);
     }
@@ -23,12 +23,12 @@ export var up = function(next){
 };
 
 export var down = function(next){
-  (async function(){
-    var db = await getConnection();
-    await db.dropCollection("grps", {});
+  co(function* (){
+    var db = yield getConnection();
+    yield db.dropCollection("grps", {});
     //indexes will be dropped automatically
     next();
-  })().catch(
+  }).catch(
     (error) => {
       log.error(error);
     }
