@@ -1,4 +1,5 @@
 import { pick, map, size } from 'lodash';
+import co from 'co';
 import later from 'later';
 import Promise from 'bluebird';
 import Ajv from 'ajv';
@@ -154,17 +155,19 @@ export const GrpSchema = {
 
 export const grpValidate = ajv.compile(GrpSchema);
 
-export async function createGrp(newGrp){
-  let grps = await getGrpCollection();
-  addGrpTimestamps(newGrp);
-  //validate the input fields
-  let valid = grpValidate(newGrp); 
-  if(!valid){
-    log.error(newGrp);
-    throw grpValidate.errors; 
-  }
-  //insert the new grp
-  return grps.insert(newGrp);
+export function createGrp(newGrp){
+  return co(function* (){
+    let grps = yield getGrpCollection();
+    addGrpTimestamps(newGrp);
+    //validate the input fields
+    let valid = grpValidate(newGrp); 
+    if(!valid){
+      log.error(newGrp);
+      throw grpValidate.errors; 
+    }
+    //insert the new grp
+    return grps.insert(newGrp);
+  });
 };
 
 export function addGrpTimestamps(grp){
@@ -208,10 +211,12 @@ export function getNextGrpDatesFromUntil(grp, count, from, until){
 
 var db = undefined;
 
-export async function getGrpCollection(){
-  if(!db){
-    db = await getConnection();      
-  } 
-  return db.collection('grps');
+export function getGrpCollection(){
+  return co(function* (){
+    if(!db){
+      db = yield getConnection();      
+    } 
+    return db.collection('grps');
+  })
 };
 

@@ -1,5 +1,6 @@
 import Promise from 'bluebird';
 import ObjectID from 'mongodb';
+import co from 'co';
 import { each, set, isString, isNil, isNumber, isInteger } from 'lodash';
 import { toGlobalId, fromGlobalId } from '@/misc/global_id';
 import { intFromBase64 } from '@/misc/base_64';
@@ -20,16 +21,18 @@ function checkPolygon(json){
 };
 
 export const GrpQueryResolvers = {
-  async grp(_, {id}){
-    var { type, localId } = fromGlobalId(id);
+  grp: (_, {id}) => {
+    let { type, localId } = fromGlobalId(id);
+    let objectId = new ObjectID(localId);
     log.info(`type: ${type}, id: ${localId}`);
-    var grps = await getGrpCollection();
-    localId = new ObjectID(localId);
-    var grp = await grps.findOne({_id: localId});
-    log.info(grp);
-    return grp;
+    return co(function* (){
+      var grps = yield getGrpCollection();
+      var grp = yield grps.findOne({_id: localId});
+      log.info(grp);
+      return grp;
+    });
   },
-  async searchGrps(_, {name, polygon, sortBy, first, after}){
+  searchGrps: (_, {name, polygon, sortBy, first, after}) => {
     // parameters validation
     let scoreOption = {};
     let sortByOption = {};
@@ -37,76 +40,78 @@ export const GrpQueryResolvers = {
     let nameOption = {};
     let pageInfo = {};
     let index = -1;
-    // check/add sort criteria
-    if(isString(sortBy)){
-      switch(sortBy){
-        case "RELEVANCE": 
-          set(sortByOption,'score.$meta', "textScore");
-          set(scoreOption, 'score.$meta', "textScore");
-          break;
-        default:
-          log.error("searchGrps: sortBy not supported");
+    return co(function* (){
+      // check/add sort criteria
+      if(isString(sortBy)){
+        switch(sortBy){
+          case "RELEVANCE": 
+            set(sortByOption,'score.$meta', "textScore");
+            set(scoreOption, 'score.$meta', "textScore");
+            break;
+          default:
+            log.error("searchGrps: sortBy not supported");
+        }
       }
-    }
-    // check/add geographic criteria 
-    if(!isNil(polygon)){
-			set(polygon, 'type', 'Polygon');
-			set(polygon, 'coordinates', [ polygon.coordinates ]);
-      var {valid, errors} = await checkPolygon(polygon);
-      if(!valid){
-        log.error("invalid polygon was specified", errors);
+      // check/add geographic criteria 
+      if(!isNil(polygon)){
+        set(polygon, 'type', 'Polygon');
+        set(polygon, 'coordinates', [ polygon.coordinates ]);
+        var {valid, errors} = yield checkPolygon(polygon);
+        if(!valid){
+          log.error("invalid polygon was specified", errors);
+        }
+        // set polygon type here
+        set(geoQueryOption, 'location.$geoWithin.$geometry', polygon);
       }
-      // set polygon type here
-      set(geoQueryOption, 'location.$geoWithin.$geometry', polygon);
-    }
-    // check/add pagination to query
-    // first is the number of elements to return
-    if(!isNumber(first) || 
-       first < 0 || 
-       20 < first
-      ){
-        first = 10;
-    } 
-    // after is the location after which to return
-    if(isString(after)){
-      // get index from 
-      index = intFromBase64(after);;
-    }
-    // add/check query name
-    if(isString(name)){
-      set(nameOption, '$text.$search', name);
-    }
-    let query = {
-        ...nameOption,
-        ...geoQueryOption,
-    };
-    // search on the criteria, generate paginated result
-    log.info("searchGrps()\nquery: ", query);
-    log.info("first: ", first);
-    log.info("after: ", index);
-    // get grps collection
-    let grps = await getGrpCollection();
-    let cursor = grps
-      .find(
-        query,
-        scoreOption
-      )
-      .sort(
-        sortByOption
-      )
-      .limit(first+1)
-      .skip(index+1);
-    return cursor
-      .toArray()
-      .then((results) => {
-        return edgeify(index+1, results, first);
-      });
+      // check/add pagination to query
+      // first is the number of elements to return
+      if(!isNumber(first) || 
+         first < 0 || 
+         20 < first
+        ){
+          first = 10;
+      } 
+      // after is the location after which to return
+      if(isString(after)){
+        // get index from 
+        index = intFromBase64(after);;
+      }
+      // add/check query name
+      if(isString(name)){
+        set(nameOption, '$text.$search', name);
+      }
+      var query = {
+          ...nameOption,
+          ...geoQueryOption,
+      };
+      // search on the criteria, generate paginated result
+      log.info("searchGrps()\nquery: ", query);
+      log.info("first: ", first);
+      log.info("after: ", index);
+      // get grps collection
+      let grps = yield getGrpCollection();
+      let cursor = grps
+        .find(
+          query,
+          scoreOption
+        )
+        .sort(
+          sortByOption
+        )
+        .limit(first+1)
+        .skip(index+1);
+      return cursor
+        .toArray()
+        .then((results) => {
+          return edgeify(index+1, results, first);
+        });
+    });
   }
 };
 
 export const GrpMutationResolvers = {
   ...EventMutationResolvers,
-  async createGrp(_, { name, type, address, location }) {
+  createGrp: (_, { name, type, address, location }) => {
     //add the new grp to mongodb
     let grp = {
       type: type,

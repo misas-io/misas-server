@@ -386,17 +386,6 @@ describe('GRP schema validation', function(){
       afterEach(function(){
         //console.log(grpValidate.errors);
       });
-      /*async function grpSchedule(done){
-        let grps = await getGrpCollection();  
-        let grp = await grps.findOne({});
-        console.log(util.inspect(grp.schedules, {showHidden: false, depth: null}))
-        let startDate = moment("201612", "YYYYMM").startOf("month").toDate();
-        let endDate = moment("201612", "YYYYMM").endOf('month').toDate();
-        console.log(startDate);
-        console.log(endDate);
-        console.log(getNextGrpDatesFromUntil(grp, -1, startDate, endDate));
-        done();
-      };*/
       describe("GRP schedule's duration", function(){
         it("GRP schedule's duration should be an int (preferably representing seconds)", function(){
           addScheduleWithDuration(grp1, 60);
