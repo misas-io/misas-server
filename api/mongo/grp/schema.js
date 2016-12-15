@@ -1,6 +1,5 @@
 import NodeSchema from '@/api/misc/node/schema';
 import EdgeSchema from '@/api/misc/edge/schema';
-import EventSchema from '@/api/mongo/event/schema';
 
 const GrpSchema = `
 
@@ -17,7 +16,6 @@ type Grp implements Node {
   created: String
   updated: String
   # contains recurring events
-  events: [ Event ]!
 }
 
 type GrpType {
@@ -117,5 +115,5 @@ input PolygonI {
 
 `;
 
-export default [ GrpSchema, ...NodeSchema, ...EdgeSchema, ...EventSchema ];
+export default [ GrpSchema, ...NodeSchema, ...EdgeSchema ];
 

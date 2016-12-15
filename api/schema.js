@@ -2,6 +2,7 @@ import { makeExecutableSchema } from 'graphql-tools';
 import GrpSchema from '@/api/mongo/grp/schema';
 import EdgeSchema from '@/api/misc/edge/schema';
 import resolvers from '@/api/resolvers';
+import util from 'util';
 
 const schema = `
   schema {
@@ -50,32 +51,7 @@ const schema = `
   }
 
   type Mutation {
-    #creates a new grp
-    createGrp(
-      #name of the grp
-      name: String!,
-      #type of the grp
-      type: String!,
-      #location of the grp 
-      location: LocationI!
-      #events not required
-      events: [ EventI ]
-    ): Grp
-    #adds events a grp
-    addGrpEvents(
-      #global id of grp
-      id: ID!
-      #array of events
-      events: [ EventI! ]!
-    ): [ Event! ]!
-    #removes events
-    removeGrpEvents(
-      #global id of grp
-      id: ID!
-      #array of indexes
-      events: [ Int! ]!
-    ): [ Event! ]!
-
+    noop: String
   }
 
   type Subscription {
@@ -84,7 +60,11 @@ const schema = `
 
 `;
 
+const preCompiledSchema = [schema, ...GrpSchema, ...EdgeSchema]; 
+/* DEBUGGIN PURPOSES FOR SCHEMA */
+//console.log(util.inspect(preCompiledSchema, false, null));
+
 export default makeExecutableSchema({
-  typeDefs: [schema, ...GrpSchema, ...EdgeSchema],
+  typeDefs: preCompiledSchema,
   resolvers,
 });

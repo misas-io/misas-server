@@ -20,10 +20,8 @@ const resolveFunctions = {
         }          
       }
     }, 
-    GrpQueryResolvers),
-  Mutation: merge(
-    {}, 
-    GrpMutationResolvers),
+    GrpQueryResolvers
+  ),
   Subscription: {
     postUpvoted(post) {
       return {};
