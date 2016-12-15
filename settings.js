@@ -26,7 +26,7 @@ var expSettings = impSettings;
 // Server defaults
 expSettings.server.host = impSettings.server.host || '0.0.0.0';
 expSettings.server.port = impSettings.server.port || 8084;
-expSettings.server.port = impSettings.server.subscription_port || 8085;
+expSettings.server.subscription_port = impSettings.server.subscription_port || 8085;
 
 // Database defaults
 expSettings.database.mongo.host = impSettings.database.mongo.host || '0.0.0.0';
