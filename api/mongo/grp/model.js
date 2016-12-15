@@ -166,7 +166,7 @@ export function createGrp(newGrp){
       throw grpValidate.errors; 
     }
     //insert the new grp
-    return grps.insert(newGrp);
+    return yield grps.insert(newGrp);
   });
 };
 
@@ -210,13 +210,18 @@ export function getNextGrpDatesFromUntil(grp, count, from, until){
 };
 
 var db = undefined;
+var promise = undefined;
 
 export function getGrpCollection(){
   return co(function* (){
-    if(!db){
-      db = yield getConnection();      
-    } 
-    return db.collection('grps');
+    if(!promise){
+      promise = new Promise((resolve, reject) => {
+        getConnection().then((db) => {
+          resolve(db.collection('grps'));    
+        });      
+      })
+    }
+    return promise;
   })
 };
 

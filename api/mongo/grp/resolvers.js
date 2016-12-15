@@ -9,7 +9,6 @@ import { createGrp, getGrpCollection, getNextGrpDatesFromUntil } from '@/api/mon
 import { edgeify } from '@/api/mongo/utils/edgeification';
 import log from '@/log';
 import geoJsonValidation from 'geojson-validation';
-import { EventResolvers, EventMutationResolvers } from '@/api/mongo/event/resolvers';
 
 function checkPolygon(json){
   var promise = new Promise((resolve, reject) => {
@@ -110,21 +109,12 @@ export const GrpQueryResolvers = {
 };
 
 export const GrpMutationResolvers = {
-  ...EventMutationResolvers,
-  createGrp: (_, { name, type, address, location }) => {
-    //add the new grp to mongodb
-    let grp = {
-      type: type,
-      name: name,
-      address: address,
-      location: location,
-    };
-    return createGrp(grp);
+  noop: () => {
+    return null; 
   }
 };
 
 export const GrpResolvers = {
-  ...EventResolvers,
   Node: {
     __resolveType(root, context, info){
       return 'Grp';
