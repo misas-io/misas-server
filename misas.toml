@@ -1,15 +1,28 @@
-#where the server will try to bind for incoming connections 
+# Binding for incoming connections
 [server]
+# If not set, will default to 0.0.0.0
 host = "0.0.0.0"
+
+# Default is 8084
 port = "8084"
+
+# Default is 8085
 subscription_port = "8085"
 
 [database]
-  #main database
+  # Primary database
   [database.mongo]
+  # Defaults to 0.0.0.0
   host = "0.0.0.0"
+  # Defaults to 27017
   port = "27017"
+  # Defaults to misas
   name = "test"
 
 [logs]
+# By default, logs are printed to stdout
 stdout = true
+
+# By default, logs are also exported to a local file misas.log
+file   = true
+filepath = "misas.log"
