@@ -213,7 +213,7 @@ var promise = undefined;
 
 export function getGrpCollection(){
   return getConnection().then((db) => {
-    resolve(db.collection('grps'));    
+    return db.collection('grps');    
   });      
 };
 
