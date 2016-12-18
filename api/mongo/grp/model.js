@@ -209,19 +209,11 @@ export function getNextGrpDatesFromUntil(grp, count, from, until){
   }
 };
 
-var db = undefined;
 var promise = undefined;
 
 export function getGrpCollection(){
-  return co(function* (){
-    if(!promise){
-      promise = new Promise((resolve, reject) => {
-        getConnection().then((db) => {
-          resolve(db.collection('grps'));    
-        });      
-      })
-    }
-    return promise;
-  })
+  return getConnection().then((db) => {
+    resolve(db.collection('grps'));    
+  });      
 };
 
