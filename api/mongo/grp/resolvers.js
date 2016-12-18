@@ -23,11 +23,11 @@ function checkPolygon(json){
 export const GrpQueryResolvers = {
   grp: (_, {id}) => {
     let { type, localId } = fromGlobalId(id);
-    log.info(`type: ${type}, id: ${localId}`);
     return co(function* (){
       var grps = yield getGrpCollection();
       var objectId = new MongoDB.ObjectID(localId);
       //console.log(util.inspect(grps, { depth: 4, colors: true }));
+      log.info(`type: ${type}, id: ${localId}`);
       var grp = yield grps.findOne({_id: objectId});
       //log.info(grp);
       return grp;

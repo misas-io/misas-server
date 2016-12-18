@@ -7,7 +7,6 @@ import log from '@/log';
 
 
 var promise = undefined;
-console.log(`MongoURL is ${MongoURL}`);
 
 export function getConnection(){
   //log.info(`trying to login to mongo @ ${MongoURL}`);
