@@ -86,10 +86,20 @@ export function getEventsFromUntil(grp, from, until){
   return events;
 }
 
+var promise = undefined;
+
 export function getEventCollection(){
-  return getConnection().then((db) => {
-    resolve(db.collection('events'));    
-  });      
+  if(!promise){
+    promise = new Promise((resolve, reject) => {
+      getConnection().then((db) => {
+        resolve(db.collection('events'));
+        return db;
+      }).catch((err) => {
+        reject(err);
+      });
+    });      
+  }
+  return promise;
 };
 
 

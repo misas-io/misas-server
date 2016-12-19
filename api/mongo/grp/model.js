@@ -212,8 +212,16 @@ export function getNextGrpDatesFromUntil(grp, count, from, until){
 var promise = undefined;
 
 export function getGrpCollection(){
-  return getConnection().then((db) => {
-    return db.collection('grps');    
-  });      
+  if(!promise){
+    promise = new Promise((resolve, reject) => {
+      getConnection().then((db) => {
+        resolve(db.collection('grps'));
+        return db;
+      }).catch((err) => {
+        reject(err);
+      });
+    });      
+  }
+  return promise;
 };
 

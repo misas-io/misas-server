@@ -27,6 +27,7 @@ export function getConnection(){
           }
           log.info(`MongoDB connected at ${MongoURL}`);
           resolve(connection);
+          return connection;
         }
       );
     });

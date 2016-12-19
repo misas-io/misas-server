@@ -8,6 +8,7 @@
     "dev:server": "nodemon ./server.js --delay 2.5 --exec babel-node",
     "migrate": "babel-node ./node_modules/mongoose-migrate/bin/migrate",
     "load_grps": "babel-node -- \"./scripts/load_grps.js\"",
+    "gen_dates": "babel-node -- \"./scripts/gen_dates.js\"",
     "test": "mocha --require babel-polyfill --compilers js:babel-core/register --reporter spec --full-trace './api/**/*.test.js'",
     "lint": "eslint ."
   },
