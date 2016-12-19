@@ -1,11 +1,12 @@
 import Promise from 'bluebird';
-import ObjectID from 'mongodb';
 import co from 'co';
+import util from 'util';
 import { each, set, isString, isNil, isNumber, isInteger } from 'lodash';
 import { toGlobalId, fromGlobalId } from '@/misc/global_id';
 import { intFromBase64 } from '@/misc/base_64';
 import { Grp } from '@/api/mongo/grp/model';
 import { createGrp, getGrpCollection, getNextGrpDatesFromUntil } from '@/api/mongo/grp/model';
+import MongoDB from 'mongodb';
 import { edgeify } from '@/api/mongo/utils/edgeification';
 import log from '@/log';
 import geoJsonValidation from 'geojson-validation';
@@ -22,12 +23,13 @@ function checkPolygon(json){
 export const GrpQueryResolvers = {
   grp: (_, {id}) => {
     let { type, localId } = fromGlobalId(id);
-    let objectId = new ObjectID(localId);
-    log.info(`type: ${type}, id: ${localId}`);
     return co(function* (){
       var grps = yield getGrpCollection();
-      var grp = yield grps.findOne({_id: localId});
-      log.info(grp);
+      var objectId = new MongoDB.ObjectID(localId);
+      //console.log(util.inspect(grps, { depth: 4, colors: true }));
+      log.info(`type: ${type}, id: ${localId}`);
+      var grp = yield grps.findOne({_id: objectId});
+      //log.info(grp);
       return grp;
     });
   },
