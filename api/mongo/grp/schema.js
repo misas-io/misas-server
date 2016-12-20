@@ -1,6 +1,5 @@
 import NodeSchema from '@/api/misc/node/schema';
 import EdgeSchema from '@/api/misc/edge/schema';
-import EventSchema from '@/api/mongo/event/schema';
 
 const GrpSchema = `
 
@@ -11,11 +10,12 @@ type Grp implements Node {
   name: String!
 	address: Address
   location: Location 
+  schedules: [ Schedule! ]
+  nextEvents(next: Int): [ String! ]!
   contributors: [ String ]
   created: String
   updated: String
   # contains recurring events
-  events: [ Event ]!
 }
 
 type GrpType {
@@ -25,13 +25,6 @@ type GrpType {
 
 type Religion {
   name: String!
-}
-
-# The exact lat, lon location of the church
-type Location {
-  type: String
-  #lat then lon
-  coordinates: [ Float! ]
 }
 
 type Address {
@@ -44,6 +37,49 @@ type Address {
   state: String
   #zip code in the us but it can be any postal code
   postal_code: Int
+}
+
+# The exact lat, lon location of the church
+type Location {
+  type: String
+  #lat then lon
+  coordinates: [ Float! ]
+}
+
+type Schedule {
+  name: String!
+  duration: Int!
+  recurrences: [ Recurrence! ]!
+}
+
+type Recurrence {
+  s: [ Int! ] 
+  s_a: [ Int! ] 
+  s_b: [ Int! ] 
+  m: [ Int! ]! 
+  m_a: [ Int! ] 
+  m_b: [ Int! ] 
+  h: [ Int! ]
+  h_a: [ Int! ] 
+  h_b: [ Int! ] 
+  d: [ Int! ] 
+  d_a: [ Int! ] 
+  d_b: [ Int! ] 
+  D: [ Int! ] 
+  D_a: [ Int! ] 
+  D_b: [ Int! ] 
+  dc: [ Int! ] 
+  dc_a: [ Int! ] 
+  dc_b: [ Int! ] 
+  dw: [ Int! ] 
+  dw_a: [ Int! ] 
+  dw_b: [ Int! ] 
+  M: [ Int! ] 
+  M_a: [ Int! ] 
+  M_b: [ Int! ] 
+  Y: [ Int! ] 
+  Y_a: [ Int! ] 
+  Y_b: [ Int! ] 
 }
 
 enum SortTypes {
@@ -79,5 +115,5 @@ input PolygonI {
 
 `;
 
-export default [ GrpSchema, ...NodeSchema, ...EdgeSchema, ...EventSchema ];
+export default [ GrpSchema, ...NodeSchema, ...EdgeSchema ];
 

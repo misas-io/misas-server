@@ -1,4 +1,5 @@
 import { pick, map, size } from 'lodash';
+import co from 'co';
 import later from 'later';
 import Promise from 'bluebird';
 import Ajv from 'ajv';
@@ -6,6 +7,8 @@ import moment from 'moment';
 import { toGlobalId } from '@/misc/global_id';
 import { getConnection } from '@/connectors/mongodb';
 import log from '@/log';
+
+later.date.localTime();
 
 const ajv = new Ajv();
 
@@ -152,17 +155,19 @@ export const GrpSchema = {
 
 export const grpValidate = ajv.compile(GrpSchema);
 
-export async function createGrp(newGrp){
-  let grps = await getGrpCollection();
-  addGrpTimestamps(newGrp);
-  //validate the input fields
-  let valid = grpValidate(newGrp); 
-  if(!valid){
-    log.error(newGrp);
-    throw grpValidate.errors; 
-  }
-  //insert the new grp
-  return grps.insert(newGrp);
+export function createGrp(newGrp){
+  return co(function* (){
+    let grps = yield getGrpCollection();
+    addGrpTimestamps(newGrp);
+    //validate the input fields
+    let valid = grpValidate(newGrp); 
+    if(!valid){
+      log.error(newGrp);
+      throw grpValidate.errors; 
+    }
+    //insert the new grp
+    return yield grps.insert(newGrp);
+  });
 };
 
 export function addGrpTimestamps(grp){
@@ -204,12 +209,19 @@ export function getNextGrpDatesFromUntil(grp, count, from, until){
   }
 };
 
-var db;
+var promise = undefined;
 
-export async function getGrpCollection(){
-  if(!db){
-    db = await getConnection();      
-  } 
-  return db.collection('grps');
+export function getGrpCollection(){
+  if(!promise){
+    promise = new Promise((resolve, reject) => {
+      getConnection().then((db) => {
+        resolve(db.collection('grps'));
+        return db;
+      }).catch((err) => {
+        reject(err);
+      });
+    });      
+  }
+  return promise;
 };
 
