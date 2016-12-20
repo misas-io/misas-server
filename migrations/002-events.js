@@ -14,6 +14,9 @@ export var up = function(next){
     yield collection.createIndex({location: "2dsphere"});
     yield collection.createIndex({grp: 1});
     yield collection.createIndex({date: 1});
+    yield collection.createIndex({country: 1});
+    yield collection.createIndex({city: 1});
+    yield collection.createIndex({state: 1});
     next();
   }).catch(
     (error) => {

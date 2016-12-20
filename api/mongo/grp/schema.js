@@ -89,6 +89,8 @@ enum SortTypes {
   CLOSEST 
   # sort by church name
   ALPHABETICAL 
+  # sort by time
+  TIME
 }
 
 input LocationI {
@@ -111,6 +113,10 @@ input AddressI {
 
 input PolygonI {
   coordinates: [ [ Float! ]! ]!
+}
+
+input PointI {
+  coordinates: [ Float! ]!
 }
 
 `;

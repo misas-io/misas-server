@@ -1,11 +1,12 @@
 import Promise from 'bluebird';
 import co from 'co';
 import util from 'util';
-import { each, set, isString, isNil, isNumber, isInteger } from 'lodash';
+import { map, each, set, isString, isNil, isNumber, isInteger } from 'lodash';
 import { toGlobalId, fromGlobalId } from '@/misc/global_id';
 import { intFromBase64 } from '@/misc/base_64';
 import { Grp } from '@/api/mongo/grp/model';
 import { createGrp, getGrpCollection, getNextGrpDatesFromUntil } from '@/api/mongo/grp/model';
+import { getEventCollection } from '@/api/mongo/event/model';
 import MongoDB from 'mongodb';
 import { edgeify } from '@/api/mongo/utils/edgeification';
 import log from '@/log';
@@ -20,6 +21,17 @@ function checkPolygon(json){
   return promise;
 };
 
+function checkPoint(json){
+  var promise = new Promise((resolve, reject) => {
+    geoJsonValidation.isPoint(json, (valid, errors) => {
+      resolve({valid: valid, errors: errors});
+    });
+  });
+  return promise;
+};
+
+
+
 export const GrpQueryResolvers = {
   grp: (_, {id}) => {
     let { type, localId } = fromGlobalId(id);
@@ -33,7 +45,19 @@ export const GrpQueryResolvers = {
       return grp;
     });
   },
-  searchGrps: (_, {name, polygon, sortBy, first, after}) => {
+  searchGrps: (
+    _, 
+    {
+      name, 
+      polygon, 
+      point, 
+      sortBy, 
+      city,
+      state,
+      first, 
+      after
+    }
+  ) => {
     // parameters validation
     let scoreOption = {};
     let sortByOption = {};
@@ -41,18 +65,9 @@ export const GrpQueryResolvers = {
     let nameOption = {};
     let pageInfo = {};
     let index = -1;
+    let cityOption = { match: {}};
+    let stateOption = { match: {}};
     return co(function* (){
-      // check/add sort criteria
-      if(isString(sortBy)){
-        switch(sortBy){
-          case "RELEVANCE": 
-            set(sortByOption,'score.$meta', "textScore");
-            set(scoreOption, 'score.$meta', "textScore");
-            break;
-          default:
-            log.error("searchGrps: sortBy not supported");
-        }
-      }
       // check/add geographic criteria 
       if(!isNil(polygon)){
         set(polygon, 'type', 'Polygon');
@@ -64,6 +79,18 @@ export const GrpQueryResolvers = {
         // set polygon type here
         set(geoQueryOption, 'location.$geoWithin.$geometry', polygon);
       }
+      // check/add nearness criteria
+      if(!isNil(point)){
+        set(point, 'type', 'Point');
+        set(point, 'coordinates', point.coordinates );
+        var {valid, errors} = yield checkPoint(point);
+        if(!valid){
+          log.error("invalid point was specified", errors);
+        }
+        // set point type here
+        set(geoQueryOption, 'location.$geoWithin.$geometry', point);
+      }
+
       // check/add pagination to query
       // first is the number of elements to return
       if(!isNumber(first) || 
@@ -81,31 +108,96 @@ export const GrpQueryResolvers = {
       if(isString(name)){
         set(nameOption, '$text.$search', name);
       }
-      var query = {
-          ...nameOption,
-          ...geoQueryOption,
-      };
-      // search on the criteria, generate paginated result
+      // check/add sort criteria
       log.info("searchGrps()\nquery: ", query);
       log.info("first: ", first);
       log.info("after: ", index);
-      // get grps collection
-      let grps = yield getGrpCollection();
-      let cursor = grps
-        .find(
-          query,
-          scoreOption
-        )
-        .sort(
-          sortByOption
-        )
-        .limit(first+1)
-        .skip(index+1);
-      return cursor
-        .toArray()
-        .then((results) => {
-          return edgeify(index+1, results, first);
-        });
+      switch(sortBy){
+        case "RELEVANCE": 
+          let grps = yield getGrpCollection();
+          set(sortByOption,'score.$meta', "textScore");
+          set(scoreOption, 'score.$meta', "textScore");
+          var query = {
+            ...nameOption,
+            ...geoQueryOption,
+          };
+          // search on the criteria, generate paginated result
+          // get grps collection
+          let cursor = grps
+          .find(
+            query,
+            scoreOption
+          )
+          .sort(
+            sortByOption
+          )
+          .limit(first+1)
+          .skip(index+1);
+          return cursor
+          .toArray()
+          .then((results) => {
+            return edgeify(index+1, results, first);
+          });
+        case "BEST":
+          // TODO: will try to guess the best church based on location
+          // and other stuff
+          log.error('Not yet implemented');
+          break;
+        case "NEAR":
+          // get the nearest church, this must use a point else it
+          // will fail. results maybe be filtered further by a polygon
+          // or keywords
+          log.error('Not yet implemented');
+          break;
+        case "TIME":
+        default:
+          // get the church with earliest event, this will need filtering
+          // with either a polygon or keywords
+          log.info("orderby: TIME");
+          if (isString(city)){
+            set(cityOption, 'match.city.$eq', city);
+          }
+          if (isString(state)){
+            set(stateOption, 'match.state.$eq', state);
+          }
+          let events = yield getEventCollection();
+          let pipeline = [
+            { $sort: { date: 1 } }, 
+            { 
+              $match: { 
+                $and: [ 
+                  {'date': { $gte: new Date() } },
+                  cityOption.match,
+                  stateOption.match,
+                ]
+              }
+            }, 
+            { $group: { _id: '$grp', date: { $min: '$date' }}}, 
+            { $sort: { date: 1}}, 
+            { 
+              $lookup: { 
+                from: 'grps', 
+                localField: '_id', 
+                foreignField: '_id', 
+                as: 'grp'
+              }
+            }
+          ];
+          return yield events.aggregate(pipeline)
+          .limit(first)
+          .skip(index+1)
+          .toArray().then((results) => {
+            //log.info(results);
+            let i = 0;
+            let grps = map(results, (result, key) => {
+              //log.info(result);
+              return result.grp[0];
+            });
+            //log.info(grps);
+            log.info(`got ${grps.length} grps`);
+            return edgeify(index+1, grps, first);
+          });
+      }
     });
   }
 };
