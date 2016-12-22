@@ -16,6 +16,7 @@ type Grp implements Node {
   created: String
   updated: String
   # contains recurring events
+  distance: Float
 }
 
 type GrpType {
@@ -91,6 +92,8 @@ enum SortTypes {
   ALPHABETICAL 
   # sort by time
   TIME
+  # how close it the GRP
+  NEAR
 }
 
 input LocationI {

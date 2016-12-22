@@ -112,9 +112,18 @@ export const GrpQueryResolvers = {
       log.info("searchGrps()\nquery: ", query);
       log.info("first: ", first);
       log.info("after: ", index);
+      let pipeline;
+      let events;
+      let grps;
+      if (isString(city)){
+        set(cityOption, 'match.city.$eq', city);
+      }
+      if (isString(state)){
+        set(stateOption, 'match.state.$eq', state);
+      }
       switch(sortBy){
         case "RELEVANCE": 
-          let grps = yield getGrpCollection();
+          grps = yield getGrpCollection();
           set(sortByOption,'score.$meta', "textScore");
           set(scoreOption, 'score.$meta', "textScore");
           var query = {
@@ -147,21 +156,43 @@ export const GrpQueryResolvers = {
           // get the nearest church, this must use a point else it
           // will fail. results maybe be filtered further by a polygon
           // or keywords
-          log.error('Not yet implemented');
+          log.info("orderby: NEAR");
+          if (!point) {
+            throw 'A point must be specified when sorting by NEAR...ness';
+          }
+          let textQuery = {};
+          pipeline = [
+            { 
+              $geoNear: {
+                near: point,
+                spherical: true,
+                distanceField: 'distance',
+                query: {
+                  $and: [ 
+                    cityOption.match,
+                    stateOption.match,
+                  ],
+                },
+              },
+            },
+          ];
+          console.log(util.inspect(pipeline, { depth: 6, colors: true }));
+          grps = yield getGrpCollection();
+          return yield grps.aggregate(pipeline)
+          .limit(first)
+          .skip(index+1)
+          .toArray().then((results) => {
+            log.info(`got ${results.length} grps`);
+            return edgeify(index+1, results, first);
+          });
           break;
         case "TIME":
         default:
           // get the church with earliest event, this will need filtering
           // with either a polygon or keywords
           log.info("orderby: TIME");
-          if (isString(city)){
-            set(cityOption, 'match.city.$eq', city);
-          }
-          if (isString(state)){
-            set(stateOption, 'match.state.$eq', state);
-          }
-          let events = yield getEventCollection();
-          let pipeline = [
+          events = yield getEventCollection();
+          pipeline = [
             { $sort: { date: 1 } }, 
             { 
               $match: { 
