@@ -230,6 +230,8 @@ export const GrpQueryResolvers = {
             },
             { $sort: { rating: 1 }},
             //the following stage should always be the same
+            { $limit: first },
+            { $skip: index+1 },
             { 
               $lookup: { 
                 from: 'grps', 
@@ -243,8 +245,6 @@ export const GrpQueryResolvers = {
           console.log(util.inspect(pipeline, { depth: 9, colors: true }));
           events = yield getEventCollection();
           return yield events.aggregate(pipeline)
-          .limit(first)
-          .skip(index+1)
           .toArray().then((results) => {
             log.info(`got ${results.length} grps`);
             //console.log(util.inspect(results, { depth: 9, colors: true }));
