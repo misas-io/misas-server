@@ -108,6 +108,21 @@ export const GrpQueryResolvers = {
       if(isString(name)){
         set(nameOption, '$text.$search', name);
       }
+      // check city and state options
+      if (isString(city)){
+        if (sortBy != 'NEAR') {
+          set(cityOption, 'match.city.$eq', city);
+        } else {
+          set(cityOption, ['match','address.city','$eq'], city);
+        }
+      }
+      if (isString(state)){
+        if (sortBy != 'NEAR') {
+          set(stateOption, 'match.state.$eq', state);
+        } else {
+          set(stateOption, ['match','address.state','$eq'], state);
+        }
+      }
       // check/add sort criteria
       log.info("searchGrps()\nquery: ", query);
       log.info("first: ", first);
@@ -115,12 +130,6 @@ export const GrpQueryResolvers = {
       let pipeline;
       let events;
       let grps;
-      if (isString(city)){
-        set(cityOption, 'match.city.$eq', city);
-      }
-      if (isString(state)){
-        set(stateOption, 'match.state.$eq', state);
-      }
       switch(sortBy){
         case "RELEVANCE": 
           grps = yield getGrpCollection();
@@ -148,8 +157,105 @@ export const GrpQueryResolvers = {
             return edgeify(index+1, results, first);
           });
         case "BEST":
-          // TODO: will try to guess the best church based on location
-          // and other stuff
+          // get the best grp based on location and next event available on that
+          // grp
+          log.info("orderby: BEST");
+          if (!point) {
+            throw 'A point must be specified when sorting by BESTness';
+          }
+          if (name) {
+            throw 'BEST...ness soring does not support searching for text terms';
+          }
+          let textQuery = {};
+          pipeline = [
+            { 
+              $geoNear: {
+                near: point,
+                spherical: true,
+                distanceField: 'distance',
+                limit: 250000,
+                query: {
+                  $and: [ 
+                    { date: { $gt: new Date(), }, },
+                    cityOption.match,
+                    stateOption.match,
+                  ],
+                },
+              },
+            },
+            { $group: { _id: '$grp', date: { $min: '$date' }, distance: { $first: '$distance' }}}, 
+            { $project: 
+              { 
+                /*
+                minutes_left: {
+                  $divide: [ 
+                    { 
+                      $subtract: [ 
+                        '$date', new Date()
+                      ]
+                    }, 
+                    60 * 1000 
+                  ]
+                },
+                minutes_away: {
+                  $divide: [ 
+                    '$distance',
+                    1200 
+                  ]
+                },
+                */
+                distance: 1,
+                rating: { 
+                  $add: [
+                    {
+                      $divide: [ 
+                        '$distance',
+                        700
+                      ]
+                    },
+                    { 
+                      $divide: [ 
+                        { 
+                          $subtract: [ 
+                            '$date', new Date() 
+                          ]
+                        }, 
+                        60 * 1000 
+                      ]
+                    },
+                  ]
+                },
+                grp: 1
+              }
+            },
+            { $sort: { rating: 1 }},
+            //the following stage should always be the same
+            { 
+              $lookup: { 
+                from: 'grps', 
+                localField: '_id', 
+                foreignField: '_id', 
+                as: 'grp'
+              }
+            },
+          ];
+          // BEST sorting
+          console.log(util.inspect(pipeline, { depth: 9, colors: true }));
+          events = yield getEventCollection();
+          return yield events.aggregate(pipeline)
+          .limit(first)
+          .skip(index+1)
+          .toArray().then((results) => {
+            log.info(`got ${results.length} grps`);
+            //console.log(util.inspect(results, { depth: 9, colors: true }));
+            let grps = map(results, (result, key) => {
+              return {
+                ...result.grp[0],
+                distance: result.distance,
+              };
+            });
+            return edgeify(index+1, grps, first);
+          });
           log.error('Not yet implemented');
           break;
         case "NEAR":
@@ -160,7 +266,9 @@ export const GrpQueryResolvers = {
           if (!point) {
             throw 'A point must be specified when sorting by NEAR...ness';
           }
-          let textQuery = {};
+          if (name) {
+            throw 'NEAR...ness soring does not support searching for text terms';
+          }
           pipeline = [
             { 
               $geoNear: {
@@ -176,7 +284,7 @@ export const GrpQueryResolvers = {
               },
             },
           ];
-          console.log(util.inspect(pipeline, { depth: 6, colors: true }));
+          console.log(util.inspect(pipeline, { depth: 9, colors: true }));
           grps = yield getGrpCollection();
           return yield grps.aggregate(pipeline)
           .limit(first)
@@ -205,6 +313,7 @@ export const GrpQueryResolvers = {
             }, 
             { $group: { _id: '$grp', date: { $min: '$date' }}}, 
             { $sort: { date: 1}}, 
+            //the following stage should always be the same
             { 
               $lookup: { 
                 from: 'grps', 
@@ -218,13 +327,9 @@ export const GrpQueryResolvers = {
           .limit(first)
           .skip(index+1)
           .toArray().then((results) => {
-            //log.info(results);
-            let i = 0;
             let grps = map(results, (result, key) => {
-              //log.info(result);
               return result.grp[0];
             });
-            //log.info(grps);
             log.info(`got ${grps.length} grps`);
             return edgeify(index+1, grps, first);
           });
