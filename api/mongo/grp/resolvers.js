@@ -12,6 +12,11 @@ import { edgeify } from '@/api/mongo/utils/edgeification';
 import log from '@/log';
 import geoJsonValidation from 'geojson-validation';
 
+const grpCollation = {
+  locale: "es",
+  strength: 1,
+};
+
 function checkPolygon(json){
   var promise = new Promise((resolve, reject) => {
     geoJsonValidation.isPolygon(json, (valid, errors) => {
@@ -65,8 +70,8 @@ export const GrpQueryResolvers = {
     let nameOption = {};
     let pageInfo = {};
     let index = -1;
-    let cityOption = { match: {}};
-    let stateOption = { match: {}};
+    let cityOption = {};
+    let stateOption = {};
     return co(function* (){
       // check/add geographic criteria 
       if(!isNil(polygon)){
@@ -110,17 +115,17 @@ export const GrpQueryResolvers = {
       }
       // check city and state options
       if (isString(city)){
-        if (sortBy != 'NEAR') {
-          set(cityOption, 'match.city.$eq', city);
+        if (sortBy != 'NEAR' && sortBy != 'RELEVANCE') {
+          set(cityOption, 'city.$eq', city);
         } else {
-          set(cityOption, ['match','address.city','$eq'], city);
+          set(cityOption, ['address.city','$eq'], city);
         }
       }
       if (isString(state)){
-        if (sortBy != 'NEAR') {
-          set(stateOption, 'match.state.$eq', state);
+        if (sortBy != 'NEAR' && sortBy != 'RELEVANCE') {
+          set(stateOption, 'state.$eq', state);
         } else {
-          set(stateOption, ['match','address.state','$eq'], state);
+          set(stateOption, ['address.state','$eq'], state);
         }
       }
       // check/add sort criteria
@@ -130,6 +135,9 @@ export const GrpQueryResolvers = {
       let pipeline;
       let events;
       let grps;
+      /********************************/
+      /* query based on SORT criteria */
+      /********************************/
       switch(sortBy){
         case "RELEVANCE": 
           grps = yield getGrpCollection();
@@ -138,13 +146,21 @@ export const GrpQueryResolvers = {
           var query = {
             ...nameOption,
             ...geoQueryOption,
+            ...cityOption,
+            ...stateOption,
           };
           // search on the criteria, generate paginated result
           // get grps collection
+          if(process.env.NODE_ENV === 'development'){
+            console.log(util.inspect(query, { depth: 9, colors: true }));
+          }
           let cursor = grps
           .find(
             query,
             scoreOption
+          )
+          .collation(
+            grpCollation
           )
           .sort(
             sortByOption
@@ -179,9 +195,9 @@ export const GrpQueryResolvers = {
                 limit: 250000,
                 query: {
                   $and: [ 
+                    cityOption,
+                    stateOption,
                     { date: { $gt: new Date(), }, },
-                    cityOption.match,
-                    stateOption.match,
                   ],
                 },
               },
@@ -192,12 +208,14 @@ export const GrpQueryResolvers = {
                 distance: 1,
                 rating: { 
                   $add: [
+                    /* calculate minutes to destination by dividing distance by 300 m / minute */
                     {
                       $divide: [ 
                         '$distance',
-                        500
+                        300 
                       ]
                     },
+                    /* calculate minutes till the start of next event */
                     { 
                       $divide: [ 
                         { 
@@ -227,14 +245,15 @@ export const GrpQueryResolvers = {
             },
           ];
           // BEST sorting
-          if(process.env.NODE_ENV == 'development'){
+          log.info(process.env.NODE_ENV);
+          if(process.env.NODE_ENV === 'development'){
             console.log(util.inspect(pipeline, { depth: 9, colors: true }));
           }
           events = yield getEventCollection();
-          return yield events.aggregate(pipeline)
+          return yield events.aggregate(pipeline, { collation: grpCollation})
           .toArray().then((results) => {
             log.info(`got ${results.length} grps`);
-            if(process.env.NODE_ENV == 'development'){
+            if(process.env.NODE_ENV === 'development'){
               console.log(util.inspect(results, { depth: 9, colors: true }));
             }
             let grps = map(results, (result, key) => {
@@ -245,8 +264,6 @@ export const GrpQueryResolvers = {
             });
             return edgeify(index+1, grps, first);
           });
-          log.error('Not yet implemented');
-          break;
         case "NEAR":
           // get the nearest church, this must use a point else it
           // will fail. results maybe be filtered further by a polygon
@@ -266,8 +283,8 @@ export const GrpQueryResolvers = {
                 distanceField: 'distance',
                 query: {
                   $and: [ 
-                    cityOption.match,
-                    stateOption.match,
+                    cityOption,
+                    stateOption,
                   ],
                 },
               },
@@ -277,7 +294,7 @@ export const GrpQueryResolvers = {
             console.log(util.inspect(pipeline, { depth: 9, colors: true }));
           }
           grps = yield getGrpCollection();
-          return yield grps.aggregate(pipeline)
+          return yield grps.aggregate(pipeline, { collation: grpCollation})
           .limit(first)
           .skip(index+1)
           .toArray().then((results) => {
@@ -287,7 +304,6 @@ export const GrpQueryResolvers = {
             }
             return edgeify(index+1, results, first);
           });
-          break;
         case "TIME":
         default:
           // get the church with earliest event, this will need filtering
@@ -300,8 +316,8 @@ export const GrpQueryResolvers = {
               $match: { 
                 $and: [ 
                   {'date': { $gte: new Date() } },
-                  cityOption.match,
-                  stateOption.match,
+                  cityOption,
+                  stateOption,
                 ]
               }
             }, 
@@ -317,7 +333,7 @@ export const GrpQueryResolvers = {
               }
             }
           ];
-          return yield events.aggregate(pipeline)
+          return yield events.aggregate(pipeline, { collation: grpCollation})
           .limit(first)
           .skip(index+1)
           .toArray().then((results) => {
