@@ -154,6 +154,9 @@ export const GrpQueryResolvers = {
           return cursor
           .toArray()
           .then((results) => {
+            if(process.env.NODE_ENV == 'development'){
+              console.log(util.inspect(results, { depth: 9, colors: true }));
+            }
             return edgeify(index+1, results, first);
           });
         case "BEST":
@@ -186,31 +189,13 @@ export const GrpQueryResolvers = {
             { $group: { _id: '$grp', date: { $min: '$date' }, distance: { $first: '$distance' }}}, 
             { $project: 
               { 
-                /*
-                minutes_left: {
-                  $divide: [ 
-                    { 
-                      $subtract: [ 
-                        '$date', new Date()
-                      ]
-                    }, 
-                    60 * 1000 
-                  ]
-                },
-                minutes_away: {
-                  $divide: [ 
-                    '$distance',
-                    1200 
-                  ]
-                },
-                */
                 distance: 1,
                 rating: { 
                   $add: [
                     {
                       $divide: [ 
                         '$distance',
-                        700
+                        500
                       ]
                     },
                     { 
@@ -242,12 +227,16 @@ export const GrpQueryResolvers = {
             },
           ];
           // BEST sorting
-          console.log(util.inspect(pipeline, { depth: 9, colors: true }));
+          if(process.env.NODE_ENV == 'development'){
+            console.log(util.inspect(pipeline, { depth: 9, colors: true }));
+          }
           events = yield getEventCollection();
           return yield events.aggregate(pipeline)
           .toArray().then((results) => {
             log.info(`got ${results.length} grps`);
-            //console.log(util.inspect(results, { depth: 9, colors: true }));
+            if(process.env.NODE_ENV == 'development'){
+              console.log(util.inspect(results, { depth: 9, colors: true }));
+            }
             let grps = map(results, (result, key) => {
               return {
                 ...result.grp[0],
@@ -284,13 +273,18 @@ export const GrpQueryResolvers = {
               },
             },
           ];
-          console.log(util.inspect(pipeline, { depth: 9, colors: true }));
+          if(process.env.NODE_ENV == 'development'){
+            console.log(util.inspect(pipeline, { depth: 9, colors: true }));
+          }
           grps = yield getGrpCollection();
           return yield grps.aggregate(pipeline)
           .limit(first)
           .skip(index+1)
           .toArray().then((results) => {
             log.info(`got ${results.length} grps`);
+            if(process.env.NODE_ENV == 'development'){
+              console.log(util.inspect(results, { depth: 9, colors: true }));
+            }
             return edgeify(index+1, results, first);
           });
           break;
@@ -331,6 +325,9 @@ export const GrpQueryResolvers = {
               return result.grp[0];
             });
             log.info(`got ${grps.length} grps`);
+            if(process.env.NODE_ENV == 'development'){
+              console.log(util.inspect(grps, { depth: 9, colors: true }));
+            }
             return edgeify(index+1, grps, first);
           });
       }

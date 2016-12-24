@@ -5,7 +5,7 @@
   "scripts": {
     "server": "babel-node ./server.js",
     "prod:server": "npm run migrate up && babel-node ./server.js",
-    "dev:server": "nodemon ./server.js --delay 2.5 --exec babel-node",
+    "dev:server": "NODE_ENV=development nodemon ./server.js --delay 2.5 --exec babel-node",
     "migrate": "babel-node ./node_modules/mongoose-migrate/bin/migrate",
     "load_grps": "babel-node -- \"./scripts/load_grps.js\"",
     "gen_dates": "babel-node -- \"./scripts/gen_dates.js\"",
