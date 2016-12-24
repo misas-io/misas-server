@@ -42,7 +42,10 @@ const schema = `
     searchGrps(
       name: String,
       polygon: PolygonI,
+      point: PointI,
       sortBy: SortTypes,
+      city: String,
+      state: String,
       first: Int,
       after: String 
     ): Page! 

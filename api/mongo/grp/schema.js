@@ -16,6 +16,7 @@ type Grp implements Node {
   created: String
   updated: String
   # contains recurring events
+  distance: Float
 }
 
 type GrpType {
@@ -85,10 +86,14 @@ type Recurrence {
 enum SortTypes {
   # sort by search terms relevance
   RELEVANCE
-  # sort by church closest
-  CLOSEST 
-  # sort by church name
+  # sort by GRP name
   ALPHABETICAL 
+  # sort by time
+  TIME
+  # how close it the GRP
+  NEAR
+  # sort by the BEST choice of GRP
+  BEST
 }
 
 input LocationI {
@@ -111,6 +116,10 @@ input AddressI {
 
 input PolygonI {
   coordinates: [ [ Float! ]! ]!
+}
+
+input PointI {
+  coordinates: [ Float! ]!
 }
 
 `;

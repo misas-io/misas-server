@@ -1,11 +1,12 @@
 import Promise from 'bluebird';
 import co from 'co';
 import util from 'util';
-import { each, set, isString, isNil, isNumber, isInteger } from 'lodash';
+import { map, each, set, isString, isNil, isNumber, isInteger } from 'lodash';
 import { toGlobalId, fromGlobalId } from '@/misc/global_id';
 import { intFromBase64 } from '@/misc/base_64';
 import { Grp } from '@/api/mongo/grp/model';
 import { createGrp, getGrpCollection, getNextGrpDatesFromUntil } from '@/api/mongo/grp/model';
+import { getEventCollection } from '@/api/mongo/event/model';
 import MongoDB from 'mongodb';
 import { edgeify } from '@/api/mongo/utils/edgeification';
 import log from '@/log';
@@ -20,6 +21,17 @@ function checkPolygon(json){
   return promise;
 };
 
+function checkPoint(json){
+  var promise = new Promise((resolve, reject) => {
+    geoJsonValidation.isPoint(json, (valid, errors) => {
+      resolve({valid: valid, errors: errors});
+    });
+  });
+  return promise;
+};
+
+
+
 export const GrpQueryResolvers = {
   grp: (_, {id}) => {
     let { type, localId } = fromGlobalId(id);
@@ -33,7 +45,19 @@ export const GrpQueryResolvers = {
       return grp;
     });
   },
-  searchGrps: (_, {name, polygon, sortBy, first, after}) => {
+  searchGrps: (
+    _, 
+    {
+      name, 
+      polygon, 
+      point, 
+      sortBy, 
+      city,
+      state,
+      first, 
+      after
+    }
+  ) => {
     // parameters validation
     let scoreOption = {};
     let sortByOption = {};
@@ -41,18 +65,9 @@ export const GrpQueryResolvers = {
     let nameOption = {};
     let pageInfo = {};
     let index = -1;
+    let cityOption = { match: {}};
+    let stateOption = { match: {}};
     return co(function* (){
-      // check/add sort criteria
-      if(isString(sortBy)){
-        switch(sortBy){
-          case "RELEVANCE": 
-            set(sortByOption,'score.$meta', "textScore");
-            set(scoreOption, 'score.$meta', "textScore");
-            break;
-          default:
-            log.error("searchGrps: sortBy not supported");
-        }
-      }
       // check/add geographic criteria 
       if(!isNil(polygon)){
         set(polygon, 'type', 'Polygon');
@@ -64,6 +79,18 @@ export const GrpQueryResolvers = {
         // set polygon type here
         set(geoQueryOption, 'location.$geoWithin.$geometry', polygon);
       }
+      // check/add nearness criteria
+      if(!isNil(point)){
+        set(point, 'type', 'Point');
+        set(point, 'coordinates', point.coordinates );
+        var {valid, errors} = yield checkPoint(point);
+        if(!valid){
+          log.error("invalid point was specified", errors);
+        }
+        // set point type here
+        set(geoQueryOption, 'location.$geoWithin.$geometry', point);
+      }
+
       // check/add pagination to query
       // first is the number of elements to return
       if(!isNumber(first) || 
@@ -81,31 +108,229 @@ export const GrpQueryResolvers = {
       if(isString(name)){
         set(nameOption, '$text.$search', name);
       }
-      var query = {
-          ...nameOption,
-          ...geoQueryOption,
-      };
-      // search on the criteria, generate paginated result
+      // check city and state options
+      if (isString(city)){
+        if (sortBy != 'NEAR') {
+          set(cityOption, 'match.city.$eq', city);
+        } else {
+          set(cityOption, ['match','address.city','$eq'], city);
+        }
+      }
+      if (isString(state)){
+        if (sortBy != 'NEAR') {
+          set(stateOption, 'match.state.$eq', state);
+        } else {
+          set(stateOption, ['match','address.state','$eq'], state);
+        }
+      }
+      // check/add sort criteria
       log.info("searchGrps()\nquery: ", query);
       log.info("first: ", first);
       log.info("after: ", index);
-      // get grps collection
-      let grps = yield getGrpCollection();
-      let cursor = grps
-        .find(
-          query,
-          scoreOption
-        )
-        .sort(
-          sortByOption
-        )
-        .limit(first+1)
-        .skip(index+1);
-      return cursor
-        .toArray()
-        .then((results) => {
-          return edgeify(index+1, results, first);
-        });
+      let pipeline;
+      let events;
+      let grps;
+      switch(sortBy){
+        case "RELEVANCE": 
+          grps = yield getGrpCollection();
+          set(sortByOption,'score.$meta', "textScore");
+          set(scoreOption, 'score.$meta', "textScore");
+          var query = {
+            ...nameOption,
+            ...geoQueryOption,
+          };
+          // search on the criteria, generate paginated result
+          // get grps collection
+          let cursor = grps
+          .find(
+            query,
+            scoreOption
+          )
+          .sort(
+            sortByOption
+          )
+          .limit(first+1)
+          .skip(index+1);
+          return cursor
+          .toArray()
+          .then((results) => {
+            if(process.env.NODE_ENV == 'development'){
+              console.log(util.inspect(results, { depth: 9, colors: true }));
+            }
+            return edgeify(index+1, results, first);
+          });
+        case "BEST":
+          // get the best grp based on location and next event available on that
+          // grp
+          log.info("orderby: BEST");
+          if (!point) {
+            throw 'A point must be specified when sorting by BESTness';
+          }
+          if (name) {
+            throw 'BEST...ness soring does not support searching for text terms';
+          }
+          let textQuery = {};
+          pipeline = [
+            { 
+              $geoNear: {
+                near: point,
+                spherical: true,
+                distanceField: 'distance',
+                limit: 250000,
+                query: {
+                  $and: [ 
+                    { date: { $gt: new Date(), }, },
+                    cityOption.match,
+                    stateOption.match,
+                  ],
+                },
+              },
+            },
+            { $group: { _id: '$grp', date: { $min: '$date' }, distance: { $first: '$distance' }}}, 
+            { $project: 
+              { 
+                distance: 1,
+                rating: { 
+                  $add: [
+                    {
+                      $divide: [ 
+                        '$distance',
+                        500
+                      ]
+                    },
+                    { 
+                      $divide: [ 
+                        { 
+                          $subtract: [ 
+                            '$date', new Date() 
+                          ]
+                        }, 
+                        60 * 1000 
+                      ]
+                    },
+                  ]
+                },
+                grp: 1
+              }
+            },
+            { $sort: { rating: 1 }},
+            //the following stage should always be the same
+            { $limit: first },
+            { $skip: index+1 },
+            { 
+              $lookup: { 
+                from: 'grps', 
+                localField: '_id', 
+                foreignField: '_id', 
+                as: 'grp'
+              }
+            },
+          ];
+          // BEST sorting
+          if(process.env.NODE_ENV == 'development'){
+            console.log(util.inspect(pipeline, { depth: 9, colors: true }));
+          }
+          events = yield getEventCollection();
+          return yield events.aggregate(pipeline)
+          .toArray().then((results) => {
+            log.info(`got ${results.length} grps`);
+            if(process.env.NODE_ENV == 'development'){
+              console.log(util.inspect(results, { depth: 9, colors: true }));
+            }
+            let grps = map(results, (result, key) => {
+              return {
+                ...result.grp[0],
+                distance: result.distance,
+              };
+            });
+            return edgeify(index+1, grps, first);
+          });
+          log.error('Not yet implemented');
+          break;
+        case "NEAR":
+          // get the nearest church, this must use a point else it
+          // will fail. results maybe be filtered further by a polygon
+          // or keywords
+          log.info("orderby: NEAR");
+          if (!point) {
+            throw 'A point must be specified when sorting by NEAR...ness';
+          }
+          if (name) {
+            throw 'NEAR...ness soring does not support searching for text terms';
+          }
+          pipeline = [
+            { 
+              $geoNear: {
+                near: point,
+                spherical: true,
+                distanceField: 'distance',
+                query: {
+                  $and: [ 
+                    cityOption.match,
+                    stateOption.match,
+                  ],
+                },
+              },
+            },
+          ];
+          if(process.env.NODE_ENV == 'development'){
+            console.log(util.inspect(pipeline, { depth: 9, colors: true }));
+          }
+          grps = yield getGrpCollection();
+          return yield grps.aggregate(pipeline)
+          .limit(first)
+          .skip(index+1)
+          .toArray().then((results) => {
+            log.info(`got ${results.length} grps`);
+            if(process.env.NODE_ENV == 'development'){
+              console.log(util.inspect(results, { depth: 9, colors: true }));
+            }
+            return edgeify(index+1, results, first);
+          });
+          break;
+        case "TIME":
+        default:
+          // get the church with earliest event, this will need filtering
+          // with either a polygon or keywords
+          log.info("orderby: TIME");
+          events = yield getEventCollection();
+          pipeline = [
+            { $sort: { date: 1 } }, 
+            { 
+              $match: { 
+                $and: [ 
+                  {'date': { $gte: new Date() } },
+                  cityOption.match,
+                  stateOption.match,
+                ]
+              }
+            }, 
+            { $group: { _id: '$grp', date: { $min: '$date' }}}, 
+            { $sort: { date: 1}}, 
+            //the following stage should always be the same
+            { 
+              $lookup: { 
+                from: 'grps', 
+                localField: '_id', 
+                foreignField: '_id', 
+                as: 'grp'
+              }
+            }
+          ];
+          return yield events.aggregate(pipeline)
+          .limit(first)
+          .skip(index+1)
+          .toArray().then((results) => {
+            let grps = map(results, (result, key) => {
+              return result.grp[0];
+            });
+            log.info(`got ${grps.length} grps`);
+            if(process.env.NODE_ENV == 'development'){
+              console.log(util.inspect(grps, { depth: 9, colors: true }));
+            }
+            return edgeify(index+1, grps, first);
+          });
+      }
     });
   }
 };

@@ -24,6 +24,21 @@ gen_stack_name(){
   echo "misas_${JOB_BASE_NAME%%-*}"
 }
 
+get_misas_env(){
+  case "${JOB_BASE_NAME}" in
+    develop)
+      echo "development"
+      ;;
+    master)
+      echo "production"
+      ;;
+    *)
+      echo "ERROR: branch is not handled currently" 1>&2
+      exit -1;
+      ;;
+  esac    # --- end of case ---
+}
+
 get_misas_location(){
   local ENV_FILE
   ENV_FILE=""
@@ -84,6 +99,8 @@ migrate:
     io.rancher.scheduler.affinity:host_label: provider=scaleway
   volumes:
     - $(get_misas_location):/usr/src/app/misas.toml
+  environment:
+    - NODE_ENV=$(get_misas_env)
 EOF
 )
   echo "$docker_compose" > docker-compose.yml
