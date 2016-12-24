@@ -1,4 +1,4 @@
-import { pick, map, size } from 'lodash';
+import { pick, map, size, get, trim, toLower } from 'lodash';
 import co from 'co';
 import later from 'later';
 import Promise from 'bluebird';
@@ -80,6 +80,9 @@ export function getEventsFromUntil(grp, from, until){
       grp: grp._id,
       name: grp.name,
       type: undefined, 
+      country: toLower(trim(get(grp, 'address.country', ''))),
+      state: toLower(trim(get(grp, 'address.state', ''))),
+      city: toLower(trim(get(grp, 'address.city', ''))),
       location: grp.location,
     }
   });

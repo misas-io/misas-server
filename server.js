@@ -10,6 +10,9 @@ import cors from 'cors';
 import settings from './settings';
 import log from './log';
 import schema from './api/schema';
+import util from 'util';
+
+console.log(util.inspect(process.env.NODE_ENV, { depth: 9, colors: true }));
 
 //check settings before initialization
 const server = settings.server;

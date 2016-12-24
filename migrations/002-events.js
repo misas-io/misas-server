@@ -8,16 +8,21 @@ export var up = function(next){
   //generated really clean code :D
   co(function* (){
     var db = yield getConnection();
+    log.info('creating events collection');
     var collection = yield db.createCollection("events", {});
     //create indexes
     yield collection.createIndex({name: "text"});
     yield collection.createIndex({location: "2dsphere"});
     yield collection.createIndex({grp: 1});
     yield collection.createIndex({date: 1});
+    yield collection.createIndex({country: 1});
+    yield collection.createIndex({city: 1});
+    yield collection.createIndex({state: 1});
     next();
   }).catch(
     (error) => {
       log.error(error);
+      process.exit(1);
     }
   );
 };
@@ -25,12 +30,14 @@ export var up = function(next){
 export var down = function(next){
   co(function* (){
     var db = yield getConnection();
+    log.info('removing events collection');
     yield db.dropCollection("events", {});
     //indexes will be dropped automatically
     next();
   }).catch(
     (error) => {
       log.error(error);
+      process.exit(1);
     }
   );
 }

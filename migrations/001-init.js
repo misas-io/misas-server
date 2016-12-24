@@ -8,6 +8,7 @@ export var up = function(next){
   //generated really clean code :D
   co(function* (){
     var db = yield getConnection();
+    log.info('creating grp collection');
     var collection = yield db.createCollection("grps", {});
     //create indexes
     yield collection.createIndex({name: "text"});
@@ -18,6 +19,7 @@ export var up = function(next){
   }).catch(
     (error) => {
       log.error(error);
+      process.exit(1);
     }
   );
 };
@@ -25,12 +27,14 @@ export var up = function(next){
 export var down = function(next){
   co(function* (){
     var db = yield getConnection();
+    log.info('removing grp collection');
     yield db.dropCollection("grps", {});
     //indexes will be dropped automatically
     next();
   }).catch(
     (error) => {
       log.error(error);
+      process.exit(1);
     }
   );
 };
