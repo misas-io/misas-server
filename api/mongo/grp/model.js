@@ -236,7 +236,11 @@ export function getNextGrpDatesFromUntil(grp, count, from, until){
 };
 
 var promise = undefined;
-
+/**
+ * This method returns a promise to a {@link http://mongodb.github.io/node-mongodb-native/2.2/api/Collection.html|Mongo Collection}
+ * of GRP. The method will make sure to connect to the DB before returning the collection.
+ * @return {Promise<Collection>} a Mongo DB Collection
+ */
 export function getGrpCollection(){
   if(!promise){
     promise = new Promise((resolve, reject) => {
