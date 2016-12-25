@@ -11,8 +11,8 @@ if is_env_develop ; then
   git config user.name "Victor Fernandez"
   git config user.email "victor.j.fdez@gmail.com"
   git checkout -b "gh-pages"
-  git add ./assets/
-  git add ./index.html
+  git add ./assets/ ./index.html
   git commit -m "documentation for `package_version`"
   git push origin gh-pages
 fi
+set +x
