@@ -19,7 +19,7 @@ if is_env_develop ; then
   docker run -v `pwd`/docs/:/usr/src/app/docs/ `gen_image_name` run prod:docs 
   mv docs/* ./
   rm -rf docs/
-  rm -rf `find . -depth 1 | grep -v 'index.html\|assets\|.git$'`
+  rm -rf `find . -maxdepth 1 | grep -v 'index.html\|assets\|\.git\|\.$'`
   # deploy to github pages
   git add ./
   git status

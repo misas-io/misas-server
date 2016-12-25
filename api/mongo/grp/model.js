@@ -208,6 +208,7 @@ var limit = 100;
  * @param {Number} count - an integer specifying the max number of dates that can be generated
  * @param {Date} from - the starting date from which to generate dates.
  * @param {Date} end - the ending date until which to generate dates.
+ * @return {Array<Date>} - the calculated dates
  */
 export function getNextGrpDatesFromUntil(grp, count, from, until){
   //get the schedules and create an array of theme
