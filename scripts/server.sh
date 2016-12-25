@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
 set -x
-if ping -c 3 -i 1 http://rancher-metadata/; then
+if [[ "`curl -sL -w "%{http_code}" http://rancher-metadata -o /dev/null`" == "200" ]] ; then
   # the first container for rancher service will run the migrations
+  echo "rancher-metadata is reachable"
   if [[ "`curl http://rancher-metadata/2016-07-09/self/container/start_count`" == '1' ]]; then
     npm run migrate
   fi
+else
+  echo "rancher-metadata is not reachable"
 fi
 set +x
 # run misas server
