@@ -12,7 +12,7 @@ if is_env_develop ; then
   # if environment is develop/development then htmls docs for this
   # project
   docker run -v `pwd`:/usr/src/app `gen_image_name` run prod:docs 
-  rm -rf `find . -depth 1 | grep -v 'index.html\|assets\|.git'`
+  rm -rf `find . -depth 1 | grep -v 'index.html\|assets\|.git$'`
   # deploy to github pages
   git status
   git add ./assets/ ./index.html
