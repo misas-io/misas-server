@@ -1,6 +1,13 @@
 import NodeSchema from '@/api/misc/node/schema';
 import EdgeSchema from '@/api/misc/edge/schema';
 
+/**
+ * This schema defines the GraphQL structure used to return
+ * GRP information. GRP defines a God Related Place, and it stores
+ * location information, schedules, names, and contributors.
+ *
+ * @module api/mongo/grp/schema
+ */
 const GrpSchema = `
 
 # A god realted place stored in MongoDB
