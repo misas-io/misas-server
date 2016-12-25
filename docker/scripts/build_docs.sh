@@ -6,8 +6,13 @@ set -x
 if is_env_develop ; then
   branch="`git branch | grep \* | cut -d ' ' -f2`"
   echo "currently on '$branch'"
+  # removing remote branch
   git config user.name "Victor Fernandez"
   git config user.email "victor.j.fdez@gmail.com"
+  # remove old orphan gh-page
+  git push origin -D gh-pages
+  git branch -D gh-pages
+  # create new branch
   git checkout --orphan -B "gh-pages"
   # if environment is develop/development then htmls docs for this
   # project
