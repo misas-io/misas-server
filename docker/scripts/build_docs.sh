@@ -21,8 +21,8 @@ if is_env_develop ; then
   rm -rf docs/
   rm -rf `find . -depth 1 | grep -v 'index.html\|assets\|.git$'`
   # deploy to github pages
+  git add ./
   git status
-  git add ./assets/ ./index.html
   git commit -m "documentation for `package_version`"
   git push origin gh-pages
   # return to original branch
