@@ -24,6 +24,13 @@ gen_stack_name(){
   echo "misas_${JOB_BASE_NAME%%-*}"
 }
 
+is_env_develop(){
+  if [[ "${JOB_BASE_NAME}" == "develop" ]]; then
+    return 0
+  fi
+  return 1
+}
+
 get_misas_env(){
   case "${JOB_BASE_NAME}" in
     develop)

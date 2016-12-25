@@ -8,6 +8,12 @@ import { toGlobalId } from '@/misc/global_id';
 import { getConnection } from '@/connectors/mongodb';
 import log from '@/log';
 
+/**
+ * This module defines the main methods to create, validate, get different
+ * information related to a GRP, etc. Most if not all DB operations for GRPs
+ * should go thru method defined here.
+ * @module api/mongo/grp/model
+ */
 later.date.localTime();
 
 const ajv = new Ajv();
@@ -154,7 +160,12 @@ export const GrpSchema = {
 };
 
 export const grpValidate = ajv.compile(GrpSchema);
-
+/**
+ * This method adds timestamps updated/created to the input GRP, then
+ * it validated the input GRP and if nothing is incorrect it is stored
+ * in mongo.
+ * @param {Object} newGrp - the object to be validated and stored
+ */
 export function createGrp(newGrp){
   return co(function* (){
     let grps = yield getGrpCollection();
@@ -169,7 +180,11 @@ export function createGrp(newGrp){
     return yield grps.insert(newGrp);
   });
 };
-
+/**
+ * This method get the current time, and adds that time as both the created
+ * and updated properties.
+ * @param {Object} grp - a GRP object
+ */
 export function addGrpTimestamps(grp){
   let now = moment().toISOString();
   grp.created = now;
