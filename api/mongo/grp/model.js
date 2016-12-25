@@ -190,14 +190,25 @@ export function addGrpTimestamps(grp){
   grp.created = now;
   grp.updated = now;
 };
-
+/**
+ * This method changes the updated field of a GRP to the current time
+ * @param {Object} grp - a GRP object
+ */
 export function updateGrpTimestamps(grp){
   let now = moment().toISOString();
   grp.updated = now;
 };
 
 var limit = 100;
-
+/**
+ * This method generates count number of dates from to until. The dates are
+ * generated based on the recurrences stored within the GRP schedules. All of
+ * these are retrieved and based on that all of the schedules are generated. 
+ * @param {Object} grp - a GRP object
+ * @param {Number} count - an integer specifying the max number of dates that can be generated
+ * @param {Date} from - the starting date from which to generate dates.
+ * @param {Date} end - the ending date until which to generate dates.
+ */
 export function getNextGrpDatesFromUntil(grp, count, from, until){
   //get the schedules and create an array of theme
   let schedules = map(grp.schedules, (event) => {
@@ -225,7 +236,11 @@ export function getNextGrpDatesFromUntil(grp, count, from, until){
 };
 
 var promise = undefined;
-
+/**
+ * This method returns a promise to a {@link http://mongodb.github.io/node-mongodb-native/2.2/api/Collection.html|Mongo Collection}
+ * of GRP. The method will make sure to connect to the DB before returning the collection.
+ * @return {Promise<Collection>} a Mongo DB Collection
+ */
 export function getGrpCollection(){
   if(!promise){
     promise = new Promise((resolve, reject) => {
