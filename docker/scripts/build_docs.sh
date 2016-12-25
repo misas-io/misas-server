@@ -10,13 +10,15 @@ if is_env_develop ; then
   git config user.name "Victor Fernandez"
   git config user.email "victor.j.fdez@gmail.com"
   # remove old orphan gh-page
-  git push origin -D gh-pages
+  git push origin --delete gh-pages
   git branch -D gh-pages
   # create new branch
-  git checkout --orphan -B "gh-pages"
+  git checkout --orphan "gh-pages"
   # if environment is develop/development then htmls docs for this
   # project
-  docker run -v `pwd`:/usr/src/app `gen_image_name` run prod:docs 
+  docker run -v `pwd`/docs/:/usr/src/app/docs/ `gen_image_name` run prod:docs 
+  mv docs/* ./
+  rm -rf docs/
   rm -rf `find . -depth 1 | grep -v 'index.html\|assets\|.git$'`
   # deploy to github pages
   git status
