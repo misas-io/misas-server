@@ -21,9 +21,10 @@ if is_env_develop ; then
   rm -rf docs/
   rm -rf `find . -maxdepth 1 | grep -v 'index.html\|assets\|\.git\|\.$'`
   # deploy to github pages
+  echo "docs.misas.io" > CNAME
   git add ./
   git status
-  git commit -m "documentation for `package_version`"
+  git commit -m "documentation for misas-server"
   git push origin gh-pages
   # return to original branch
   git checkout "$branch"
