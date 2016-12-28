@@ -10,6 +10,7 @@ import { getEventCollection } from '@/api/mongo/event/model';
 import MongoDB from 'mongodb';
 import { edgeify } from '@/api/mongo/utils/edgeification';
 import log from '@/log';
+import { getLogger } from '@/log';
 import geoJsonValidation from 'geojson-validation';
 
 const grpCollation = {
@@ -52,7 +53,10 @@ export const GrpQueryResolvers = {
   },
   searchGrps: (
     _, 
-    {
+    parms
+  ) => {
+    let log = getLogger();
+    let {
       name, 
       polygon, 
       point, 
@@ -61,8 +65,8 @@ export const GrpQueryResolvers = {
       state,
       first, 
       after
-    }
-  ) => {
+    } = parms;
+    log.verbose("%j", parms);
     // parameters validation
     let scoreOption = {};
     let sortByOption = {};
@@ -129,9 +133,6 @@ export const GrpQueryResolvers = {
         }
       }
       // check/add sort criteria
-      log.info("searchGrps()\nquery: ", query);
-      log.info("first: ", first);
-      log.info("after: ", index);
       let pipeline;
       let events;
       let grps;
@@ -151,9 +152,6 @@ export const GrpQueryResolvers = {
           };
           // search on the criteria, generate paginated result
           // get grps collection
-          if(process.env.NODE_ENV === 'development'){
-            console.log(util.inspect(query, { depth: 9, colors: true }));
-          }
           let cursor = grps
           .find(
             query,
@@ -170,15 +168,12 @@ export const GrpQueryResolvers = {
           return cursor
           .toArray()
           .then((results) => {
-            if(process.env.NODE_ENV == 'development'){
-              console.log(util.inspect(results, { depth: 9, colors: true }));
-            }
+            log.verbose("%j", results);
             return edgeify(index+1, results, first);
           });
         case "BEST":
           // get the best grp based on location and next event available on that
           // grp
-          log.info("orderby: BEST");
           if (!point) {
             throw 'A point must be specified when sorting by BESTness';
           }
@@ -245,17 +240,12 @@ export const GrpQueryResolvers = {
             },
           ];
           // BEST sorting
-          log.info(process.env.NODE_ENV);
-          if(process.env.NODE_ENV === 'development'){
-            console.log(util.inspect(pipeline, { depth: 9, colors: true }));
-          }
+          log.silly("%j", pipeline);
           events = yield getEventCollection();
           return yield events.aggregate(pipeline, { collation: grpCollation})
           .toArray().then((results) => {
             log.info(`got ${results.length} grps`);
-            if(process.env.NODE_ENV === 'development'){
-              console.log(util.inspect(results, { depth: 9, colors: true }));
-            }
+            log.verbose("%j", results);
             let grps = map(results, (result, key) => {
               return {
                 ...result.grp[0],
@@ -268,7 +258,6 @@ export const GrpQueryResolvers = {
           // get the nearest church, this must use a point else it
           // will fail. results maybe be filtered further by a polygon
           // or keywords
-          log.info("orderby: NEAR");
           if (!point) {
             throw 'A point must be specified when sorting by NEAR...ness';
           }
@@ -290,25 +279,20 @@ export const GrpQueryResolvers = {
               },
             },
           ];
-          if(process.env.NODE_ENV == 'development'){
-            console.log(util.inspect(pipeline, { depth: 9, colors: true }));
-          }
+          log.silly("%j", pipeline);
           grps = yield getGrpCollection();
           return yield grps.aggregate(pipeline, { collation: grpCollation})
           .limit(first)
           .skip(index+1)
           .toArray().then((results) => {
             log.info(`got ${results.length} grps`);
-            if(process.env.NODE_ENV == 'development'){
-              console.log(util.inspect(results, { depth: 9, colors: true }));
-            }
+            log.verbose("%j", results);
             return edgeify(index+1, results, first);
           });
         case "TIME":
         default:
           // get the church with earliest event, this will need filtering
           // with either a polygon or keywords
-          log.info("orderby: TIME");
           events = yield getEventCollection();
           pipeline = [
             { $sort: { date: 1 } }, 
@@ -333,6 +317,7 @@ export const GrpQueryResolvers = {
               }
             }
           ];
+          log.silly("%j", pipeline);
           return yield events.aggregate(pipeline, { collation: grpCollation})
           .limit(first)
           .skip(index+1)
@@ -341,9 +326,7 @@ export const GrpQueryResolvers = {
               return result.grp[0];
             });
             log.info(`got ${grps.length} grps`);
-            if(process.env.NODE_ENV == 'development'){
-              console.log(util.inspect(grps, { depth: 9, colors: true }));
-            }
+            log.verbose("%j", grps);
             return edgeify(index+1, grps, first);
           });
       }

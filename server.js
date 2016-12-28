@@ -17,30 +17,32 @@ console.log(util.inspect(process.env.NODE_ENV, { depth: 9, colors: true }));
 //check settings before initialization
 const server = settings.server;
 const logger = { log: (e) => log.error('GraphQL schema error', e.stack) };
-const graphQLServer = express().use('*', cors());
+const expressServer = express().use('*', cors());
 
 // setup graph ql server
-graphQLServer.use('/graphql', bodyParser.json(), graphqlExpress({
+expressServer.use('/graphql', bodyParser.json(), graphqlExpress({
   schema,
   context: {},
 }));
 
 addErrorLoggingToSchema(schema, logger);
 
-graphQLServer.use('/graphiql', graphiqlExpress({
-  endpointURL: '/graphql',
-}));
+if (process.env.NODE_ENV == 'development') {
+  expressServer.use('/graphiql', graphiqlExpress({
+    endpointURL: '/graphql',
+  }));
+}
 
-graphQLServer.use('/schema', (req, res) => {
+expressServer.use('/schema', (req, res) => {
   res.set('Content-Type', 'text/plain');
   res.send(printSchema(schema));
 });
 
-graphQLServer.get('/health', (req, res) => {
+expressServer.get('/health', (req, res) => {
   res.send('healthy');
 });
 
-graphQLServer.listen(server.port, () => log.info(
+expressServer.listen(server.port, () => log.info(
   `GraphQL Server is now running on http://${server.host}:${server.port}/graphql`
 ));
 

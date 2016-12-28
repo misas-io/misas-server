@@ -4,7 +4,7 @@
   "description": "misas server api",
   "scripts": {
     "server": "babel-node ./server.js",
-    "prod:server": "./scripts/server.sh",
+    "prod:server": "export NODE_ENV=production && ./scripts/server.sh",
     "dev:server": "export NODE_ENV=development && nodemon ./server.js --delay 2.5 --exec babel-node",
     "prod:docs": "npm run documentation build server.js -- -f html -o docs ",
     "dev:docs": "npm run documentation serve server.js -- -f html -o docs -w",
