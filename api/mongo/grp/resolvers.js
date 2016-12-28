@@ -1,7 +1,8 @@
 import Promise from 'bluebird';
 import co from 'co';
 import util from 'util';
-import { map, each, set, isString, isNil, isNumber, isInteger } from 'lodash';
+import { map, each, set, isString, isNil, isNumber, isInteger, isArray } from 'lodash';
+import geodist from 'geodist';
 import { toGlobalId, fromGlobalId } from '@/misc/global_id';
 import { intFromBase64 } from '@/misc/base_64';
 import { Grp } from '@/api/mongo/grp/model';
@@ -51,9 +52,28 @@ export const GrpQueryResolvers = {
       return grp;
     });
   },
+  /**
+   * This is a resolver function as defined in {@link http://dev.apollodata.com/tools/graphql-tools/resolvers.html|Apollo's resolver docs}
+   * it will return a promise which should return an array of GRPs if the function succesfully 
+   * queried the DB. 
+   *
+   * @param {undefined} _ - takes nothing as the first input this is to ignore context
+   * @param {Object} parms - parameters to the searchGrps query function
+   * @param {String=} parms.name - the name of the GRP where order and spaces don't matter
+   * @param {Object=} parms.polygon - A polygon represention using coordinates 
+   * @param {Array.<Array.<Float>>=} parms.polygon.coordinates - the actual array of [lat,lon] coordinates of the polygon
+   * @param {Array.<Float>=} parms.point - An array [lat,lon] specifying the coordinates of a point
+   * @param {String=} parms.sortBy - A String specifying the order by which to sort eg. TIME, BEST, etc.
+   * @param {String=} parms.city - A String specifying the name of a city (case, accent's, etc don't matter)
+   * @param {String=} parms.state - A String specifying the name of a state (case, accent's, etc don't matter)
+   * @param {Number=} parms.first - A Number for the 'first' number of GRPs to return 
+   * @param {String=} parms.after - An opaque ID String specifying the offset from the 0's result of the query 
+   * @return {Promise<Object[]>} - the GRPs from search
+   */
   searchGrps: (
     _, 
-    parms
+    parms,
+    context
   ) => {
     let log = getLogger();
     let {
@@ -97,6 +117,7 @@ export const GrpQueryResolvers = {
           log.error("invalid point was specified", errors);
         }
         // set point type here
+        context.point = point;
         set(geoQueryOption, 'location.$geoWithin.$geometry', point);
       }
 
@@ -365,6 +386,35 @@ export const GrpResolvers = {
     },
     contributors(grp) {
       return grp.contributors || [];
+    },
+    distance(grp, _, context) {
+      // if there is already a distance, or point is null, or
+      // the GRP's location is null
+      if (isNumber(grp.distance) ||
+          isNil(context.point) ||
+          isNil(grp.location)) {
+        return;
+      }
+      // check the schema for a point used by previous query
+      // if it exists then use it to calculate the distance
+      let pointCoordinates = context.point.coordinates;
+      let grpCoordinates = grp.location.coordinates; 
+      let from = {
+        lat: pointCoordinates[1], 
+        lon: pointCoordinates[0],
+      };
+      let to = {
+        lat: grpCoordinates[1], 
+        lon: grpCoordinates[0],
+      };
+      let result = geodist(
+        from,
+        to,
+        {
+          unit: 'meters',
+        }
+      );
+      return result;
     },
     location(grp) {
       return grp.location || {
