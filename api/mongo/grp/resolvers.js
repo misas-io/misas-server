@@ -390,8 +390,10 @@ export const GrpResolvers = {
     distance(grp, _, context) {
       // if there is already a distance, or point is null, or
       // the GRP's location is null
-      if (isNumber(grp.distance) ||
-          isNil(context.point) ||
+      if (isNumber(grp.distance)){
+        return grp.distance;
+      }
+      if (isNil(context.point) ||
           isNil(grp.location)) {
         return;
       }
