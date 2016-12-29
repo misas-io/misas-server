@@ -134,6 +134,8 @@ $(
   fi
 )
     io.rancher.scheduler.affinity:host_label: provider=scaleway
+  environment:
+    - NODE_ENV=$(get_misas_env)
   volumes:
     - $(get_misas_location):/usr/src/app/misas.toml
 EOF
