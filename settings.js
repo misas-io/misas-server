@@ -1,7 +1,9 @@
 import toml from 'toml';
 import fs from 'fs';
-import log from './log';
+import log from '@/log';
+import { setupLogger } from '@/log';
 import _ from 'lodash';
+import util from 'util';
 
 var impSettings = {};
 var misasConfPath = process.env.MISAS_CONF || "misas.toml";
@@ -12,7 +14,8 @@ if(_.isEqual(impSettings, {}))
   {
     const conf = fs.readFileSync(misasConfPath, { encoding: 'utf8'});
     impSettings = toml.parse(conf);
-    log.info('configuration loaded from TOML %s\n', misasConfPath, impSettings);
+    log.info('configuration loaded from TOML %s', misasConfPath);
+    log.info("\n"+util.inspect(impSettings, { depth: 5, colors: true, breakLength: 0 }));
   }
   catch(e)
   {
@@ -53,6 +56,8 @@ else
 expSettings.logs.filepath = impSettings.logs.filepath || "misas.log";
 
 const settings = expSettings;
+
+setupLogger(settings);
 
 export const Mongo = settings.database.mongo;
 export const MongoURL = process.env.MONGO_URL || `mongodb://${Mongo.host}:${Mongo.port}/${Mongo.name}`;

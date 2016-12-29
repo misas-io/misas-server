@@ -2137,6 +2137,10 @@ generate-object-property@^1.1.0:
   dependencies:
     is-property "^1.0.0"
 
+geodist@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/geodist/-/geodist-0.2.1.tgz#9619a5d935529335716faafad32228c29dc0b920"
+
 geojson-validation@^0.1.6:
   version "0.1.6"
   resolved "http://registry.npmjs.org/geojson-validation/-/geojson-validation-0.1.6.tgz#b107945e56be1c7af0a6dd868a9bd706e52b5a2a"
@@ -3844,11 +3848,11 @@ q@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/q/-/q-1.4.1.tgz#55705bcd93c5f3673530c2c2cbc0c2b3addc286e"
 
-qs@6.2.0:
+qs@6.2.0, qs@^6.2.0:
   version "6.2.0"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.2.0.tgz#3b7848c03c2dece69a9522b0fae8c4126d745f3b"
 
-qs@^6.2.0, qs@~6.3.0:
+qs@~6.3.0:
   version "6.3.0"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.3.0.tgz#f403b264f23bc01228c74131b407f18d5ea5d442"
 
