@@ -110,6 +110,7 @@ export const GrpQueryResolvers = {
       }
       // check/add nearness criteria
       if(!isNil(point)){
+        log.info(point);
         set(point, 'type', 'Point');
         set(point, 'coordinates', point.coordinates );
         var {valid, errors} = yield checkPoint(point);
@@ -390,8 +391,10 @@ export const GrpResolvers = {
     distance(grp, _, context) {
       // if there is already a distance, or point is null, or
       // the GRP's location is null
-      if (isNumber(grp.distance) ||
-          isNil(context.point) ||
+      if (isNumber(grp.distance)){
+        return grp.distance;
+      }
+      if (isNil(context.point) ||
           isNil(grp.location)) {
         return;
       }
