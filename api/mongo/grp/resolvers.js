@@ -110,7 +110,6 @@ export const GrpQueryResolvers = {
       }
       // check/add nearness criteria
       if(!isNil(point)){
-        log.info(point);
         set(point, 'type', 'Point');
         set(point, 'coordinates', point.coordinates );
         var {valid, errors} = yield checkPoint(point);
