@@ -6,6 +6,8 @@
     "server": "babel-node ./server.js",
     "prod:server": "./scripts/server.sh",
     "dev:server": "export NODE_ENV=development && nodemon ./server.js --delay 2.5 --exec babel-node",
+    "prod:scheduler": "babel-node ./scheduler.js",
+    "dev:scheduler": "export NODE_ENV=development && nodemon ./scheduler.js --delay 2.5 --exec babel-node",
     "prod:docs": "npm run documentation build server.js -- -f html -o docs ",
     "dev:docs": "npm run documentation serve server.js -- -f html -o docs -w",
     "migrate": "babel-node ./node_modules/mongoose-migrate/bin/migrate",
@@ -34,6 +36,7 @@
   },
   "homepage": "https://github.com/misas-io/misas-server#readme",
   "dependencies": {
+    "agenda": "^0.9.0",
     "ajv": "^4.9.1",
     "async": "^2.1.4",
     "bluebird": "^3.4.6",
