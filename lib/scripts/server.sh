@@ -12,4 +12,4 @@ else
 fi
 set +x
 # run misas server
-babel-node ./server.js
+babel-node @/lib/server.js
