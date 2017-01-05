@@ -13,7 +13,7 @@ gen_image_name(){
     echo "Error: env variable BUILD_NUMBER required" 1>&2
     exit -1
   fi
-  echo "$MISAS_BASE:`package_version`_${BUILD_NUMBER:-0}"
+  echo "victor755555/$MISAS_BASE:`package_version`_${BUILD_NUMBER:-0}"
 }
 
 gen_service_name(){
