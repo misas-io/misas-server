@@ -6,21 +6,14 @@ EXPOSE 8085
 
 WORKDIR /usr/src/app
 
-COPY connectors/ connectors/
-COPY misc/ misc/ 
-COPY migrations/ migrations/
-COPY scripts/ scripts/
-COPY config/ config/
-COPY api/ api/
-COPY server.js \
-     log.js \
-     settings.js \
-     yarn.lock \
+COPY lib/ lib/
+COPY  yarn.lock \
      package.json \
      .babelrc \
      LICENSE \
      ./
 
-RUN yarn install
+RUN yarn install && \
+     mkdir logs/
 ENTRYPOINT ["npm"]
 CMD ["run", "prod:server"]
