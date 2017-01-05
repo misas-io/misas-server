@@ -138,6 +138,15 @@ $(
     - NODE_ENV=$(get_misas_env)
   volumes:
     - $(get_misas_location):/usr/src/app/misas.toml
+scheduler: 
+  image: ${image}
+  command: run "prod:scheduler"
+  labels:
+    io.rancher.scheduler.affinity:host_label: provider=scaleway
+  environment:
+    - NODE_ENV=$(get_misas_env)
+  volumes:
+    - $(get_misas_location):/usr/src/app/misas.toml
 EOF
   )
   echo "$docker_compose" > docker-compose.yml
@@ -159,6 +168,8 @@ ${service_name}:
     response_timeout: 2000
     request_line: GET "/health" "HTTP/1.0"
     healthy_threshold: 2
+scheduler:
+  scale: 1 
 EOF
   )
   echo "$docker_compose" > rancher-compose.yml
