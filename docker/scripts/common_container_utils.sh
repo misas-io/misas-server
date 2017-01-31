@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-MISAS_URL="api.misas.io"
+MISAS_URL="misas.io"
 MISAS_PACKAGE="package.json"
 MISAS_BASE="misas"
 
@@ -13,7 +13,7 @@ gen_image_name(){
     echo "Error: env variable BUILD_NUMBER required" 1>&2
     exit -1
   fi
-  echo "$MISAS_BASE:`package_version`_${BUILD_NUMBER:-0}"
+  echo "victor755555/$MISAS_BASE:`package_version`_${BUILD_NUMBER:-0}"
 }
 
 gen_service_name(){
@@ -22,6 +22,13 @@ gen_service_name(){
 
 gen_stack_name(){
   echo "misas_${JOB_BASE_NAME%%-*}"
+}
+
+is_env_develop(){
+  if [[ "${JOB_BASE_NAME}" == "develop" ]]; then
+    return 0
+  fi
+  return 1
 }
 
 get_misas_env(){
@@ -70,13 +77,13 @@ gen_docker_rancher_compose(){
   case "${JOB_BASE_NAME}" in
     develop)
       service_name="$1"
-      override="dev.api.misas.io"
+      override="dev.api"
       scale=1
       stack="stack"
       ;;
     master)
       service_name="$1"
-      override="api.misas.io"
+      override="api"
       scale=2
       stack="stack"
       ;;
@@ -121,12 +128,24 @@ ${service_name}:
     traefik.enable: ${stack} 
     traefik.domain: ${domains}
     traefik.port: 8084
+    traefik.acme: true
 $( 
   if [ ! -z "$override" ]; then
-    echo "    traefik.override: $override"
+    echo "    traefik.alias: $override"
   fi
 )
     io.rancher.scheduler.affinity:host_label: provider=scaleway
+  environment:
+    - NODE_ENV=$(get_misas_env)
+  volumes:
+    - $(get_misas_location):/usr/src/app/misas.toml
+scheduler: 
+  image: ${image}
+  command: run "prod:scheduler"
+  labels:
+    io.rancher.scheduler.affinity:host_label: provider=scaleway
+  environment:
+    - NODE_ENV=$(get_misas_env)
   volumes:
     - $(get_misas_location):/usr/src/app/misas.toml
 EOF
@@ -150,6 +169,8 @@ ${service_name}:
     response_timeout: 2000
     request_line: GET "/health" "HTTP/1.0"
     healthy_threshold: 2
+scheduler:
+  scale: 1 
 EOF
   )
   echo "$docker_compose" > rancher-compose.yml

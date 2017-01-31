@@ -9,3 +9,9 @@ rancher-compose -p "`gen_stack_name`" \
                 --confirm-upgrade \
                 --interval 30000 \
                 "api"
+rancher-compose -p "`gen_stack_name`" \
+                up -d \
+                --upgrade \
+                --confirm-upgrade \
+                --interval 30000 \
+                "scheduler"
