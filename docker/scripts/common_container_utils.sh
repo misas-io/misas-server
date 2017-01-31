@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-MISAS_URL="api.misas.io"
+MISAS_URL="misas.io"
 MISAS_PACKAGE="package.json"
 MISAS_BASE="misas"
 
@@ -77,13 +77,13 @@ gen_docker_rancher_compose(){
   case "${JOB_BASE_NAME}" in
     develop)
       service_name="$1"
-      override="dev.api.misas.io"
+      override="dev.api"
       scale=1
       stack="stack"
       ;;
     master)
       service_name="$1"
-      override="api.misas.io"
+      override="api"
       scale=2
       stack="stack"
       ;;
@@ -128,9 +128,10 @@ ${service_name}:
     traefik.enable: ${stack} 
     traefik.domain: ${domains}
     traefik.port: 8084
+    traefik.acme: true
 $( 
   if [ ! -z "$override" ]; then
-    echo "    traefik.override: $override"
+    echo "    traefik.alias: $override"
   fi
 )
     io.rancher.scheduler.affinity:host_label: provider=scaleway
