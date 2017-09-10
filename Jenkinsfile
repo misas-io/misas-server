@@ -32,7 +32,7 @@ podTemplate(
     )
   ]
 ){
-  def image = "jenkinsci/jnlp-slave"
+  def image = "victor755555/misas-server"
   node('docker') {
     stage 'Showing environment'
     sh 'env' 
