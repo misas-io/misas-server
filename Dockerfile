@@ -6,7 +6,6 @@ EXPOSE 8085
 
 WORKDIR /usr/src/app
 
-COPY lib/ lib/
 COPY  yarn.lock \
      package.json \
      .babelrc \
@@ -15,5 +14,9 @@ COPY  yarn.lock \
 
 RUN yarn install && \
      mkdir logs/
+
+COPY lib/ lib/
+
+VOLUME ["/usr/src/app/", "/etc/misas/"]
 ENTRYPOINT ["npm"]
 CMD ["run", "prod:server"]

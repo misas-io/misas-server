@@ -34,3 +34,9 @@ node_modules
 # Optional REPL history
 .node_repl_history
 *.swp
+misas-values.yaml
+
+# Helm files
+index.yaml
+misas-server*.tgz
+misas-server/charts/
