@@ -1,6 +1,7 @@
 /**
  * This pipeline will run a Docker image build
  */
+  https://storage.googleapis.com/kubernetes-helm/helm-v2.6.1-darwin-amd64.tar.gz
 
 podTemplate(
   label: 'docker',
@@ -24,6 +25,7 @@ podTemplate(
   ]
 ){
   def image = "victor755555/misas"
+  def helm_version = "v2.6.1"
   node('docker') {
     stage('Build Docker image (misas-server)') {
       git url: 'https://github.com/misas-io/misas-server.git', branch: env.JOB_BASE_NAME
@@ -38,6 +40,18 @@ podTemplate(
         sh "docker build -t ${image} ."
         sh "docker push ${image}"
       }
+    }
+    /*stage('Generate new helm chart') {
+    }*/
+    stage('Deploy helm upgrade') {
+      httpRequest(
+        outputFile: 'helm', 
+        responseHandle: 'NONE', 
+        url: "https://storage.googleapis.com/kubernetes-helm/helm-${helm_version}-linux-amd64.tar.gz"
+      )
+      sh 'chmod +x ./helm'
+      sh './helm status'
+      sh './helm list'
     }
   }
 }
