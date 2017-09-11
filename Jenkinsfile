@@ -48,8 +48,8 @@ podTemplate(
         url: "https://storage.googleapis.com/kubernetes-helm/helm-${helm_version}-linux-amd64.tar.gz"
       )
       sh 'tar -xf ./helm.tar.gz'
-      sh 'chmod +x ./helm'
-      sh 'ls -la ./ ~/'
+      /*sh 'chmod +x ./helm'*/
+      sh 'ls -laR ./ ~/'
       sh '`pwd`/helm list'
     }
   }
