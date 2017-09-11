@@ -23,14 +23,18 @@ podTemplate(
     )
   ]
 ){
-  def image = "victor755555/misas-server"
+  def image = "victor755555/misas"
   node('docker') {
     stage('Build Docker image (misas-server)') {
       git url: 'https://github.com/misas-io/misas-server.git', branch: env.JOB_BASE_NAME
       container('docker') {
         sh 'env' 
         sh 'ls -la ./ ~/'
-        sh 'docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD'
+        sh '''
+            set +x
+            docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
+            set -x
+           '''
         sh "docker build -t ${image} ."
         sh "docker push ${image}"
       }
