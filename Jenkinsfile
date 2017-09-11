@@ -9,7 +9,7 @@ podTemplate(
       name: 'docker', 
       image: 'docker:17.09.0-ce', 
       ttyEnabled: true, 
-      command: 'cat'
+      command: 'cat',
       envVars: [
         secretEnvVar(key: 'DOCKER_USERNAME', secretName: 'docker-registry', secretKey: 'username'),
         secretEnvVar(key: 'DOCKER_PASSWORD', secretName: 'docker-registry', secretKey: 'password')
