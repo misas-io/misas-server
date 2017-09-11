@@ -50,7 +50,7 @@ podTemplate(
       sh 'env'
       sh 'chmod +x ./helm'
       sh 'ls -la ./ ~/'
-      sh './helm status'
+      sh 'head ./helm'
       sh './helm list'
     }
   }
