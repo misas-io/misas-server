@@ -47,6 +47,7 @@ podTemplate(
         responseHandle: 'NONE', 
         url: "https://storage.googleapis.com/kubernetes-helm/helm-${helm_version}-linux-amd64.tar.gz"
       )
+      sh 'env'
       sh 'chmod +x ./helm'
       sh 'ls -la ./ ~/'
       sh './helm status'
