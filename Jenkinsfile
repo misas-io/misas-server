@@ -23,12 +23,16 @@ podTemplate(
   node('docker') {
     stage('Showing environment') {
       sh 'env' 
+      sh 'ls -la ./ ~/'
     }
     stage('Build Docker image') {
       sh 'env' 
+      sh 'ls -la ./ ~/'
       git url: 'https://github.com/misas-io/misas-server.git', branch: env.JOB_BASE_NAME
       container('docker') {
+        sh 'ls -la ./ ~/'
         sh "docker build -t ${image} ."
+        sh "docker push -t ${image} ."
       }
     }
   }
