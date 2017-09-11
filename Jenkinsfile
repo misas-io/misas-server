@@ -30,8 +30,6 @@ podTemplate(
     stage('Build Docker image (misas-server)') {
       git url: 'https://github.com/misas-io/misas-server.git', branch: env.JOB_BASE_NAME
       container('docker') {
-        sh 'env' 
-        sh 'ls -la ./ ~/'
         sh '''
             set +x
             docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
@@ -50,6 +48,7 @@ podTemplate(
         url: "https://storage.googleapis.com/kubernetes-helm/helm-${helm_version}-linux-amd64.tar.gz"
       )
       sh 'chmod +x ./helm'
+      sh 'ls -la ./ ~/'
       sh './helm status'
       sh './helm list'
     }
