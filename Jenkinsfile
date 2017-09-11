@@ -43,15 +43,14 @@ podTemplate(
     }*/
     stage('Deploy helm upgrade') {
       httpRequest(
-        outputFile: 'helm', 
+        outputFile: 'helm.tar.gz', 
         responseHandle: 'NONE', 
         url: "https://storage.googleapis.com/kubernetes-helm/helm-${helm_version}-linux-amd64.tar.gz"
       )
-      sh 'env'
+      sh 'tar -xf ./helm.tar.gz'
       sh 'chmod +x ./helm'
       sh 'ls -la ./ ~/'
-      sh 'head ./helm'
-      sh './helm list'
+      sh '`pwd`/helm list'
     }
   }
 }
