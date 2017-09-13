@@ -10,6 +10,7 @@ COPY  yarn.lock \
      package.json \
      .babelrc \
      LICENSE \
+     misas.toml \
      ./
 
 RUN yarn install && \
