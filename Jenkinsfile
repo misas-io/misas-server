@@ -39,20 +39,31 @@ podTemplate(
            '''
         sh "docker build -t ${image} ."
         sh "docker push ${image}"
-        sh "docker rmi ${image}"
       }
     }
     stage('Test Docker image for all branches'){
       container('docker') {
-        sh "docker run ${image} run test "
+        sh "docker run --rm ${image} run test "
       } 
     }
-    stage('Build docs for develop branch'){
+    stage('Build Docs for develop branch'){
+      def container_name = "${env.JOB_BASE_NAME}-${env.JOB_BASE_NUMBER}"
       if ([develop_branch].contains(env.JOB_BASE_NAME)){    
-        echo 'Building docs for develop branch'
+        container('docker') {
+          sh "docker run --name ${container_name} ${image} run prod:docs" 
+          sh "docker cp ${container_name}:docs/ ./"
+          stash includes: './docs/', name: 'docs'
+        }
       }
+      unstash 'docs'
+      sh 'ls -la'
     }
-    stage("Get helm (${helm_version})") {
+    stage("Remove Docker image ${image} for all branches"){
+      container('docker') {
+        sh "docker rmi ${image}"
+      } 
+    }
+    stage("Get helm (${helm_version})"){
       httpRequest(
         outputFile: 'helm.tar.gz', 
         responseHandle: 'NONE', 
