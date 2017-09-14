@@ -80,13 +80,16 @@ podTemplate(
       sh 'cp ./linux-amd64/helm ./ && rm -rf ./linux-amd64/'
     }
     stage("Build chart only for (develop, master) branches") {
-      sh './helm dep build ./charts/misas-server/'
-      sh './helm package ./charts/misas-server/'
-      sh './helm repo index ./misas-server/'
-      sh 'mkdir -p helm-charts/'
-      sh 'mv index.yaml *.tgz helm-charts/' 
-      container('aws'){
-        sh 'aws s3 sync --delete helm-charts/ s3://charts.misas.io/develop/'    
+      if ([develop_branch].contains(env.JOB_BASE_NAME)){    
+        sh './helm repo update' 
+        sh './helm dep build ./charts/misas-server/'
+        sh './helm package ./charts/misas-server/'
+        sh './helm repo index ./misas-server/'
+        sh 'mkdir -p helm-charts/'
+        sh 'mv index.yaml *.tgz helm-charts/' 
+        container('aws'){
+          sh 'aws s3 sync --delete helm-charts/ s3://charts.misas.io/develop/'    
+        }
       }
     }
   }
