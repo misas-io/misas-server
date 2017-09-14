@@ -15,6 +15,12 @@ podTemplate(
         secretEnvVar(key: 'DOCKER_USERNAME', secretName: 'docker-registry', secretKey: 'username'),
         secretEnvVar(key: 'DOCKER_PASSWORD', secretName: 'docker-registry', secretKey: 'password')
       ],
+    ),
+    containerTemplate(
+      name: 'aws', 
+      image: 'cgswong/aws:s3cmd', 
+      ttyEnabled: true, 
+      command: 'cat'
     )
   ],
   volumes: [
@@ -56,7 +62,7 @@ podTemplate(
           //stash includes: 'docs/', name: 'docs'
           sh "docker rm -f ${container_name}"
         }
-        sh "ls -Rla ${pwd()}/docs/"
+        //sh "ls -Rla ${pwd()}/docs/"
       }
     }
     stage("Remove Docker image ${image} for all branches"){
@@ -72,9 +78,16 @@ podTemplate(
       )
       sh 'tar -xf ./helm.tar.gz && rm -f ./helm.tar.gz'
       sh 'cp ./linux-amd64/helm ./ && rm -rf ./linux-amd64/'
-      sh './helm list'
     }
     stage("Build chart only for (develop, master) branches") {
+      sh './helm dep build ./charts/misas-server/'
+      sh './helm package ./charts/misas-server/'
+      sh './helm repo index ./misas-server/'
+      sh 'mkdir -p helm-charts/'
+      sh 'mv index.yaml *.tgz helm-charts/' 
+      container('aws'){
+        sh 'aws s3 sync --delete helm-charts/ s3://charts.misas.io/develop/'    
+      }
     }
   }
 }
