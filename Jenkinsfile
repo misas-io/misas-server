@@ -47,7 +47,7 @@ podTemplate(
       } 
     }
     stage('Build Docs for develop branch'){
-      def container_name = "${env.JOB_BASE_NAME}-${env.JOB_BASE_NUMBER}"
+      def container_name = "${env.JOB_BASE_NAME}-${env.BUILD_NUMBER}"
       if ([develop_branch].contains(env.JOB_BASE_NAME)){    
         container('docker') {
           sh "docker run --name ${container_name} ${image} run prod:docs" 
