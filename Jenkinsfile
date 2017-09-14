@@ -21,6 +21,7 @@ podTemplate(
       image: 'cgswong/aws:s3cmd', 
       ttyEnabled: true, 
       command: 'cat'
+      //TODO: mount aws credentials
     )
   ],
   volumes: [
