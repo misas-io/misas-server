@@ -82,10 +82,9 @@ podTemplate(
     stage("Build chart only for (develop, master) branches") {
       if ([develop_branch, master_branch].contains(env.JOB_BASE_NAME)){    
         sh './helm init -c' 
-        //sh './helm repo update' 
         sh './helm dep build ./charts/misas-server/'
         sh './helm package ./charts/misas-server/'
-        sh './helm repo index ./misas-server/'
+        sh './helm repo index ./charts/misas-server/'
         sh 'mkdir -p helm-charts/'
         sh 'mv index.yaml *.tgz helm-charts/' 
         container('aws'){
