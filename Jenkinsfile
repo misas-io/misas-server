@@ -70,7 +70,7 @@ podTemplate(
         sh "docker rmi -f ${image}"
       } 
     }
-    stage("Get helm (${helm_version})"){
+    stage("Get helm (${helm_version}) for (develop, master) branches"){
       httpRequest(
         outputFile: 'helm.tar.gz', 
         responseHandle: 'NONE', 
@@ -80,8 +80,9 @@ podTemplate(
       sh 'cp ./linux-amd64/helm ./ && rm -rf ./linux-amd64/'
     }
     stage("Build chart only for (develop, master) branches") {
-      if ([develop_branch].contains(env.JOB_BASE_NAME)){    
-        sh './helm repo update' 
+      if ([develop_branch, master_branch].contains(env.JOB_BASE_NAME)){    
+        sh './helm init -c' 
+        //sh './helm repo update' 
         sh './helm dep build ./charts/misas-server/'
         sh './helm package ./charts/misas-server/'
         sh './helm repo index ./misas-server/'
