@@ -2,7 +2,7 @@
  * This pipeline will run a Docker image build
  */
   https://storage.googleapis.com/kubernetes-helm/helm-v2.6.1-darwin-amd64.tar.gz
-
+properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '3')), pipelineTriggers([])])
 podTemplate(
   label: 'docker',
   containers: [
