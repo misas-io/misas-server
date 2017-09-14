@@ -51,7 +51,7 @@ podTemplate(
       if ([develop_branch].contains(env.JOB_BASE_NAME)){    
         container('docker') {
           sh "docker run --name ${container_name} ${image} run prod:docs" 
-          sh "docker cp ${container_name}:docs/ ./"
+          sh "docker cp ${container_name}:/usr/src/app/docs/ ./"
           stash includes: './docs/', name: 'docs'
         }
       }
