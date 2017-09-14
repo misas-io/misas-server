@@ -89,7 +89,7 @@ podTemplate(
         sh 'mv ./charts/misas-server/index.yaml *.tgz helm-charts/' 
         container('aws'){
           sh 's3cmd ls s3://charts.misas.io/develop/'    
-          sh 's3cmd sync --delete helm-charts/ s3://charts.misas.io/develop/'    
+          sh 's3cmd sync --delete-removed helm-charts/ s3://charts.misas.io/develop/'    
         }
       }
     }
