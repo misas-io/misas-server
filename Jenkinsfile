@@ -52,8 +52,8 @@ podTemplate(
         container('docker') {
           sh "docker run --name ${container_name} ${image} run prod:docs" 
           sh "docker cp ${container_name}:/usr/src/app/docs/ ./docs/"
-          sh "ls -la"
-          stash includes: './docs/', name: 'docs'
+          sh "ls -la ${pwd()}/docs/"
+          stash includes: 'docs/', name: 'docs'
         }
       }
       unstash 'docs'
