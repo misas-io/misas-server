@@ -63,7 +63,7 @@ podTemplate(
     }
     stage("Remove Docker image ${image} for all branches"){
       container('docker') {
-        sh "docker rmi ${image}"
+        sh "docker rmi -f ${image}"
       } 
     }
     stage("Get helm (${helm_version})"){
