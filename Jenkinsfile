@@ -1,7 +1,6 @@
 /**
- * This pipeline will run a Docker image build
+ * This pipeline will build misas-server
  */
-  https://storage.googleapis.com/kubernetes-helm/helm-v2.6.1-darwin-amd64.tar.gz
 properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '3')), pipelineTriggers([])])
 podTemplate(
   label: 'docker',
@@ -21,13 +20,17 @@ podTemplate(
       image: 'cgswong/aws:s3cmd', 
       ttyEnabled: true, 
       command: 'cat'
-      //TODO: mount aws credentials
     )
   ],
   volumes: [
     hostPathVolume(
       hostPath: '/var/run/docker.sock', 
       mountPath: '/var/run/docker.sock'
+    ),
+    // s3cfg credentials for aws s3cmd program
+    secretVolume( 
+      mountPath: '/root/',
+      readOnly: 's3cmd-secret' 
     )
   ]
 ){
@@ -89,6 +92,7 @@ podTemplate(
         sh 'mkdir -p helm-charts/'
         sh 'mv ./charts/misas-server/index.yaml *.tgz helm-charts/' 
         container('aws'){
+          sh 'ls -la /root/'
           sh 's3cmd ls s3://charts.misas.io/develop/'    
           sh 's3cmd sync --delete-removed helm-charts/ s3://charts.misas.io/develop/'    
         }
