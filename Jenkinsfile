@@ -30,7 +30,7 @@ podTemplate(
     // s3cfg credentials for aws s3cmd program
     secretVolume( 
       mountPath: '/root/',
-      readOnly: 's3cmd-secret' 
+      secretName: 's3cmd-secret' 
     )
   ]
 ){
