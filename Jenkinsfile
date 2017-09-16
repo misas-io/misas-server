@@ -43,7 +43,7 @@ podTemplate(
   def github_user_username  = "victor755555"
   node('docker') {
     stage('Build Docker image (misas-server) for all branches') {
-      git url: 'https://github.com/misas-io/misas-server.git', branch: env.JOB_BASE_NAME
+      git url: 'git@github.com:misas-io/misas-server.git', branch: env.JOB_BASE_NAME
       container('docker') {
         sh '''
             set +x
@@ -94,13 +94,9 @@ podTemplate(
           }
           //sh "ls -Rla ${pwd()}/docs/"
           stash includes: 'docs/', name: 'docs'
-          sh "git config --global user.email \"${github_user_email}\""
-          sh "git config --global user.name \"${github_user_name}\""
-          sh "git config --global user.username \"${github_user_username}\""
           sh 'git checkout --orphan gh-pages'
           sh 'rm -rf *' 
           unstash 'docs'
-          sh 'ls -la'
           sh 'git add docs/*'
           sh 'git commit -m \"develop docs\"'
           sh 'git push -f origin gh-pages' 
