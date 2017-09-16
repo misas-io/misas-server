@@ -29,8 +29,8 @@ podTemplate(
     ),
     // s3cfg credentials for aws s3cmd program
     secretVolume( 
-      mountPath: '/root/',
-      secretName: 's3cmd-secret' 
+      mountPath: '/root/.ssh/',
+      secretName: 'github-ssh' 
     )
   ]
 ){
@@ -38,6 +38,8 @@ podTemplate(
   def helm_version = "v2.6.1"
   def develop_branch = "develop"
   def master_branch = "master"
+  def github_user_email = "victor.j.fdez@gmail.com"
+  def github_user_name  = "Victor Fernandez"
   node('docker') {
     stage('Build Docker image (misas-server) for all branches') {
       git url: 'https://github.com/misas-io/misas-server.git', branch: env.JOB_BASE_NAME
@@ -91,6 +93,8 @@ podTemplate(
           }
           //sh "ls -Rla ${pwd()}/docs/"
           stash includes: 'docs/', name: 'docs'
+          sh "git config --global user.email \"${github_user_email}\""
+          sh "git config --global user.name \"${github_user_name}\""
           sh 'git checkout --orphan gh-pages'
           sh 'rm -rf *' 
           unstash 'docs'
