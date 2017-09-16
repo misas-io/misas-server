@@ -56,29 +56,11 @@ podTemplate(
         sh "docker run --rm ${image} run test "
       } 
     }
-    stage('Build Docs for develop branch'){
-      def container_name = "${env.JOB_BASE_NAME}-${env.BUILD_NUMBER}"
-      if ([develop_branch].contains(env.JOB_BASE_NAME)){    
-        container('docker') {
-          sh "docker run --name ${container_name} ${image} run prod:docs" 
-          sh "docker cp ${container_name}:/usr/src/app/docs/ ./docs/"
-          sh "chmod -R ugo+rw ${pwd()}/docs/"
-          //stash includes: 'docs/', name: 'docs'
-          sh "docker rm -f ${container_name}"
-        }
-        //sh "ls -Rla ${pwd()}/docs/"
-      }
-    }
-    stage("Remove Docker image ${image} for all branches"){
-      container('docker') {
-        sh "docker rmi -f ${image}"
-      } 
-    }
     stage("Get helm (${helm_version}) for (develop, master) branches"){
       httpRequest(
-        outputFile: 'helm.tar.gz', 
-        responseHandle: 'NONE', 
-        url: "https://storage.googleapis.com/kubernetes-helm/helm-${helm_version}-linux-amd64.tar.gz"
+          outputFile: 'helm.tar.gz', 
+          responseHandle: 'NONE', 
+          url: "https://storage.googleapis.com/kubernetes-helm/helm-${helm_version}-linux-amd64.tar.gz"
       )
       sh 'tar -xf ./helm.tar.gz && rm -f ./helm.tar.gz'
       sh 'cp ./linux-amd64/helm ./ && rm -rf ./linux-amd64/'
@@ -96,6 +78,32 @@ podTemplate(
           sh 'aws s3 sync --delete helm-charts/ s3://charts.misas.io/develop/'    
         }
       }
+    }
+    stage('Build Docs for develop branch'){
+      def container_name = "${env.JOB_BASE_NAME}-${env.BUILD_NUMBER}"
+        if ([develop_branch].contains(env.JOB_BASE_NAME)){    
+          container('docker') {
+            sh "docker run --name ${container_name} ${image} run prod:docs" 
+              sh "docker cp ${container_name}:/usr/src/app/docs/ ./docs/"
+              sh "chmod -R ugo+rw ${pwd()}/docs/"
+              //stash includes: 'docs/', name: 'docs'
+              sh "docker rm -f ${container_name}"
+          }
+          //sh "ls -Rla ${pwd()}/docs/"
+          stash includes: 'docs/', name: 'docs'
+          sh 'git checkout --orphan gh-pages'
+          sh 'rm -rf *' 
+          unstash 'docs'
+          sh 'ls -la'
+          sh 'git add docs/*'
+          sh 'git commit -m "develop docs"'
+          sh 'git push -f origin gh-pages' 
+      }
+    }
+    stage("Remove Docker image ${image} for all branches"){
+      container('docker') {
+        sh "docker rmi -f ${image}"
+      } 
     }
   }
 }
