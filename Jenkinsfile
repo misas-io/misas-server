@@ -40,6 +40,7 @@ podTemplate(
   def master_branch = "master"
   def github_user_email = "victor.j.fdez@gmail.com"
   def github_user_name  = "Victor Fernandez"
+  def github_user_username  = "victor755555"
   node('docker') {
     stage('Build Docker image (misas-server) for all branches') {
       git url: 'https://github.com/misas-io/misas-server.git', branch: env.JOB_BASE_NAME
@@ -95,6 +96,7 @@ podTemplate(
           stash includes: 'docs/', name: 'docs'
           sh "git config --global user.email \"${github_user_email}\""
           sh "git config --global user.name \"${github_user_name}\""
+          sh "git config --global user.username \"${github_user_username}\""
           sh 'git checkout --orphan gh-pages'
           sh 'rm -rf *' 
           unstash 'docs'
