@@ -100,7 +100,7 @@ podTemplate(
           unstash 'docs'
           sh 'ls -la'
           sh 'git add docs/*'
-          sh 'git commit -m "develop docs"'
+          sh 'git commit -m \"develop docs\"'
           sh 'git push -f origin gh-pages' 
       }
     }
