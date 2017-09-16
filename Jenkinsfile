@@ -17,7 +17,7 @@ podTemplate(
     ),
     containerTemplate(
       name: 'aws', 
-      image: 'cgswong/aws:s3cmd', 
+      image: 'cgswong/aws', 
       ttyEnabled: true, 
       command: 'cat'
     )
@@ -92,9 +92,8 @@ podTemplate(
         sh 'mkdir -p helm-charts/'
         sh 'mv ./charts/misas-server/index.yaml *.tgz helm-charts/' 
         container('aws'){
-          sh 'ls -la /root/'
-          sh 's3cmd ls s3://charts.misas.io/develop/'    
-          sh 's3cmd sync --delete-removed helm-charts/ s3://charts.misas.io/develop/'    
+          sh 'aws s3 ls s3://charts.misas.io/develop/'    
+          sh 'aws s3 sync --delete helm-charts/ s3://charts.misas.io/develop/'    
         }
       }
     }
