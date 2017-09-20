@@ -90,7 +90,7 @@ podTemplate(
         sh 'mv ./charts/misas-server/index.yaml *.tgz helm-charts/' 
         container('aws'){
           sh "aws s3 ls s3://charts.misas.io/${branch}/"
-          sh "aws s3 sync --delete helm-charts/ s3://charts.misas.io/${branch}/'    
+          sh "aws s3 sync --delete helm-charts/ s3://charts.misas.io/${branch}/" 
         }
         // check if repo has been added yet else add it
         def exitCode = "helm repo list | grep 'misas-${branch}'".execute().waitFor()
