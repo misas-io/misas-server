@@ -50,6 +50,7 @@ podTemplate(
       //sh ' whoami '
       //sh ' whoami '
       sh 'ls -lRa /home/jenkins/'
+      sh 'ssh git@github.com'
       //sh 'mkdir $HOME/.ssh/ && cp $HOME/ssh-keys/* $HOME/.ssh/ && chmod 600'
       git url: 'git@github.com:misas-io/misas-server.git', branch: env.JOB_BASE_NAME
       container('docker') {
