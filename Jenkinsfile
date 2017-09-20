@@ -28,11 +28,11 @@ podTemplate(
       mountPath: '/var/run/docker.sock'
     ),
     secretVolume( 
-      mountPath: '/root/.ssh/',
+      mountPath: '/jenkins/.ssh/',
       secretName: 'github-ssh' 
     ),
     configMapVolume(
-      mountPath: '/root/values/', 
+      mountPath: '/jenkins/values/', 
       configMapName: 'helm-misas-values'
     )
   ]
@@ -49,7 +49,7 @@ podTemplate(
     stage('Build Docker image (misas-server) for all branches') {
       sh ' whoami '
       sh ' whoami '
-      sh 'ls -lRa /root/.ssh/ /root/values/'
+      sh 'ls -lRa /jenkins/.ssh/ /jenkins/values/'
       git url: 'git@github.com:misas-io/misas-server.git', branch: env.JOB_BASE_NAME
       container('docker') {
         sh '''
@@ -84,7 +84,7 @@ podTemplate(
     }
     stage("Build chart only for (develop, master) branches") {
       if ([develop_branch, master_branch].contains(branch)){    
-        sh 'ls -l /root/values/'
+        sh 'ls -l /jenkins/values/'
         sh './helm init -c' 
         sh './helm dep build ./charts/misas-server/'
         sh './helm package ./charts/misas-server/'
@@ -108,9 +108,9 @@ podTemplate(
         // if misas is not deployed, then deploy it
         def exitCode = "helm list | grep 'misas-${branch}'".execute().waitFor()
         if (exit != 0) {
-          sh "helm install -f /root/values/${branch}.yaml misas-${branch}/misas-server"
+          sh "helm install -f /jenkins/values/${branch}.yaml misas-${branch}/misas-server"
         } else {
-          sh "helm upgrade -f /root/values/${branch}.yaml misas-${branch} "
+          sh "helm upgrade -f /jenkins/values/${branch}.yaml misas-${branch} "
         }
       } 
     }
