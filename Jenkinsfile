@@ -47,7 +47,8 @@ podTemplate(
   def branch = env.JOB_BASE_NAME
   node('docker') {
     stage('Build Docker image (misas-server) for all branches') {
-      sh 'whoami'
+      sh ' whoami '
+      sh ' whoami '
       sh 'ls -lRa /root/.ssh/ /root/values/'
       git url: 'git@github.com:misas-io/misas-server.git', branch: env.JOB_BASE_NAME
       container('docker') {
