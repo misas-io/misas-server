@@ -107,7 +107,7 @@ podTemplate(
         if (exit != 0) {
           sh "helm install -f /root/values/${branch}.yaml misas-${branch}/misas-server"
         } else {
-          sh "helm upgrade -f /root/values/${branch}.yaml misas-${branch}
+          sh "helm upgrade -f /root/values/${branch}.yaml misas-${branch} "
         }
       } 
     }
