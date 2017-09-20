@@ -28,7 +28,7 @@ podTemplate(
       mountPath: '/var/run/docker.sock'
     ),
     secretVolume( 
-      mountPath: '/jenkins/.ssh/',
+      mountPath: '/jenkins/ssh-keys/',
       secretName: 'github-ssh' 
     ),
     configMapVolume(
@@ -50,6 +50,7 @@ podTemplate(
       sh ' whoami '
       sh ' whoami '
       sh 'ls -lRa /jenkins/.ssh/ /jenkins/values/'
+      sh 'mkdir $HOME/.ssh/ && cp $HOME/ssh-keys/* $HOME/.ssh/ && chmod 600'
       git url: 'git@github.com:misas-io/misas-server.git', branch: env.JOB_BASE_NAME
       container('docker') {
         sh '''
