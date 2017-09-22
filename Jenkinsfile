@@ -103,7 +103,7 @@ podTemplate(
           sh "aws s3 sync --delete helm-charts/ s3://charts.misas.io/${branch}/" 
         }
         // check if repo has been added yet else add it
-        def exitCode = "./helm repo list | grep 'misas-${branch}'".execute().waitFor()
+        def exitCode = sh script: "./helm repo list | grep 'misas-${branch}'", returnStatus: true
         if(exitCode != 0){
           sh "./helm repo add misas-${branch} http://charts.misas.io/${branch}"  
         }
@@ -113,7 +113,7 @@ podTemplate(
     stage("Deploy chart for (develop, master) branches"){
       if ([develop_branch, master_branch].contains(branch)){    
         // if misas is not deployed, then deploy it
-        def exitCode = "helm list | grep 'misas-${branch}'".execute().waitFor()
+        def exitCode = sh script: "./helm list | grep 'misas-${branch}'", returnStatus: true
         if (exit != 0) {
           sh "./helm install -f $HOME/values/${branch}.yaml misas-${branch}/misas-server"
         } else {
