@@ -141,11 +141,12 @@ podTemplate(
         sh 'git add docs/*'
         sshagent(['github-ssh-keys']) {
 
-          def command = \$ git config --global user.email \\\"victor.j.fdez@gmail.com\\\" \$
+          def command = $/ git config --global user.email \\\"victor.j.fdez@gmail.com\\\" /$
           sh command
-          command = \$ git config --global user.name \\\"Victor Fernandez\\\" \$
+          command = $/ git config --global user.name \\\"Victor Fernandez\\\" /$
           sh command
-          command = \$ git commit -m \\\"develop docs\\\" \$
+          command = $/ git commit -m \\\"develop docs\\\" /$
+          sh command
           sh 'git push -f origin gh-pages' 
         }
       }
