@@ -1,7 +1,11 @@
 /**
  * This pipeline will build misas-server
  */
-properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '3')), pipelineTriggers([])])
+properties([
+  buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '3')), 
+  pipelineTriggers([]),
+  disableConcurrentBuilds()
+])
 podTemplate(
   label: 'docker',
   containers: [
@@ -27,10 +31,10 @@ podTemplate(
       hostPath: '/var/run/docker.sock', 
       mountPath: '/var/run/docker.sock'
     ),
-    /*secretVolume( 
+    secretVolume( 
       mountPath: '/home/jenkins/ssh-keys/',
       secretName: 'github-ssh' 
-    ),*/
+    ),
     configMapVolume(
       mountPath: '/home/jenkins/values/', 
       configMapName: 'helm-misas-values'
@@ -51,9 +55,9 @@ podTemplate(
       //sh ' whoami '
       //sh 'ls -lRa /home/jenkins/ssh-keys/'
       //sh 'mkdir $HOME/.ssh/ && cp -L $HOME/ssh-keys/id_rs* $HOME/.ssh/ && chmod 600 $HOME/.ssh/id_rs*'
-      sh 'ls -lRa /home/jenkins/ '
       //sh 'ssh -v git@github.com'
-      git url: 'git@github.com:misas-io/misas-server.git', branch: env.JOB_BASE_NAME
+      git credentialsId: '1a32a473-ecfc-455f-b83c-04770e33599b', url: 'git@github.com:misas-io/misas-server.git', branch: env.JOB_BASE_NAME
+      sh 'ls -lRa /home/jenkins/'
       container('docker') {
         sh '''
             set +x
