@@ -50,7 +50,7 @@ podTemplate(
   def github_user_username  = "victor755555"
   def branch = env.JOB_BASE_NAME
   node('docker') {
-    stage('Build Docker image (misas-server) for all branches') {
+    stage('Build image') {
       //sh ' whoami '
       //sh ' whoami '
       //sh 'ls -lRa /home/jenkins/ssh-keys/'
@@ -75,12 +75,12 @@ podTemplate(
         }
       }
     }
-    stage('Test Docker image for all branches'){
+    stage('Test image'){
       container('docker') {
         sh "docker run --rm ${image}:${branch} run test "
       } 
     }
-    stage("Get helm (${helm_version}) for (develop, master) branches"){
+    stage("Get helm (${helm_version})"){
       httpRequest(
           outputFile: 'helm.tar.gz', 
           responseHandle: 'NONE', 
@@ -89,7 +89,7 @@ podTemplate(
       sh 'tar -xf ./helm.tar.gz && rm -f ./helm.tar.gz'
       sh 'cp ./linux-amd64/helm ./ && rm -rf ./linux-amd64/'
     }
-    stage("Build chart only for (develop, master) branches") {
+    stage("Build chart") {
       if ([develop_branch, master_branch].contains(branch)){    
         sh 'ls -l $HOME/values/'
         sh './helm init -c' 
@@ -111,19 +111,19 @@ podTemplate(
         sh './helm repo update'
       }
     }
-    stage("Deploy chart for (develop, master) branches"){
+    stage("Deploy chart"){
       if ([develop_branch, master_branch].contains(branch)){    
         // if misas is not deployed, then deploy it
         def command = $/ ./helm list | grep misas-${branch} /$
         def exitCode = sh script: command, returnStatus: true
-        if (exit != 0) {
+        if (exitCode != 0) {
           sh "./helm install -f $HOME/values/${branch}.yaml misas-${branch}/misas-server"
         } else {
           sh "./helm upgrade -f $HOME/values/${branch}.yaml misas-${branch} "
         }
       } 
     }
-    stage('Build Docs for develop branch'){
+    stage('Build Docs'){
       def container_name = "${env.JOB_BASE_NAME}-${env.BUILD_NUMBER}"
         if ([develop_branch].contains(branch)){    
           container('docker') {
@@ -143,9 +143,9 @@ podTemplate(
           sh 'git push -f origin gh-pages' 
       }
     }
-    stage("Remove Docker image ${image} for all branches"){
+    stage("Remove Docker image"){
       container('docker') {
-        sh "docker rmi -f ${image}:${branch}"
+        sh "docker rmi -f --no-prune ${image}:${branch}"
       } 
     }
   }
