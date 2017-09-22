@@ -118,18 +118,18 @@ podTemplate(
         def exitCode = sh script: command, returnStatus: true
         if (exitCode != 0) {
           sh '''
-            ./helm install 
-              -f $HOME/values/${branch}.yaml 
-              --name misas-${branch} 
-              --namespace misas-${branch}
+            ./helm install                    \
+              -f $HOME/values/${branch}.yaml  \
+              --name misas-${branch}          \
+              --namespace misas-${branch}     \
                 misas-${branch}/misas-server
              '''
         } else {
           sh '''
-            ./helm upgrade 
-              -f $HOME/values/${branch}.yaml 
-              --name misas-${branch} 
-              --namespace misas-${branch}
+            ./helm upgrade                    \
+              -f $HOME/values/${branch}.yaml  \
+              --name misas-${branch}          \
+              --namespace misas-${branch}     \
                 misas-${branch}/misas-server
             '''
         }
