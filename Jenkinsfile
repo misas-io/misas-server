@@ -56,7 +56,7 @@ podTemplate(
       //sh 'ls -lRa /home/jenkins/ssh-keys/'
       //sh 'mkdir $HOME/.ssh/ && cp -L $HOME/ssh-keys/id_rs* $HOME/.ssh/ && chmod 600 $HOME/.ssh/id_rs*'
       //sh 'ssh -v git@github.com'
-      git credentialsId: '1a32a473-ecfc-455f-b83c-04770e33599b', url: 'git@github.com:misas-io/misas-server.git', branch: env.JOB_BASE_NAME
+      git credentialsId: 'github-ssh-keys', url: 'git@github.com:misas-io/misas-server.git', branch: env.JOB_BASE_NAME
       //sh 'ls -lRa /home/jenkins/'
       container('docker') {
         sh '''
@@ -125,22 +125,24 @@ podTemplate(
     }
     stage('Build Docs'){
       def container_name = "${env.JOB_BASE_NAME}-${env.BUILD_NUMBER}"
-        if ([develop_branch].contains(branch)){    
-          container('docker') {
-              sh "docker run --name ${container_name} ${image}:${branch} run prod:docs" 
-              sh "docker cp ${container_name}:/usr/src/app/docs/ ./docs/"
-              sh "chmod -R ugo+rw ${pwd()}/docs/"
-              //stash includes: 'docs/', name: 'docs'
-              sh "docker rm -f ${container_name}"
-          }
-          //sh "ls -Rla ${pwd()}/docs/"
-          stash includes: 'docs/', name: 'docs'
-          sh 'git checkout --orphan gh-pages'
-          sh 'rm -rf *' 
-          unstash 'docs'
-          sh 'git add docs/*'
+      if ([develop_branch].contains(branch)){    
+        container('docker') {
+          sh "docker run --name ${container_name} ${image}:${branch} run prod:docs" 
+            sh "docker cp ${container_name}:/usr/src/app/docs/ ./docs/"
+            sh "chmod -R ugo+rw ${pwd()}/docs/"
+            //stash includes: 'docs/', name: 'docs'
+            sh "docker rm -f ${container_name}"
+        }
+        //sh "ls -Rla ${pwd()}/docs/"
+        stash includes: 'docs/', name: 'docs'
+        sh 'git checkout --orphan gh-pages'
+        sh 'rm -rf *' 
+        unstash 'docs'
+        sh 'git add docs/*'
+        sshagent(['github-ssh-keys']) {
           sh 'git commit -m \"develop docs\"'
           sh 'git push -f origin gh-pages' 
+        }
       }
     }
     stage("Remove Docker image"){
