@@ -31,10 +31,6 @@ podTemplate(
       hostPath: '/var/run/docker.sock', 
       mountPath: '/var/run/docker.sock'
     ),
-    /*secretVolume( 
-      mountPath: '/home/jenkins/ssh-keys/',
-      secretName: 'github-ssh' 
-    ),*/
     configMapVolume(
       mountPath: '/home/jenkins/values/', 
       configMapName: 'helm-misas-values'
