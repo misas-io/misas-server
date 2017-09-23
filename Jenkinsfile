@@ -51,20 +51,15 @@ podTemplate(
   def branch = env.JOB_BASE_NAME
   node('docker') {
     stage('Build image') {
-      //sh ' whoami '
-      //sh ' whoami '
-      //sh 'ls -lRa /home/jenkins/ssh-keys/'
-      //sh 'mkdir $HOME/.ssh/ && cp -L $HOME/ssh-keys/id_rs* $HOME/.ssh/ && chmod 600 $HOME/.ssh/id_rs*'
-      //sh 'ssh -v git@github.com'
+      // checkout the code
       git credentialsId: 'github-ssh-keys', url: 'git@github.com:misas-io/misas-server.git', branch: env.JOB_BASE_NAME
-      //sh 'ls -lRa /home/jenkins/'
       container('docker') {
         sh '''
             set +x
             docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
             set -x
            '''
-        
+        // build the image 
         if ([master_branch].contains(branch)){    
           sh "docker build -t ${image}:latest -t ${image}:${branch} ."
         } else {
@@ -133,18 +128,19 @@ podTemplate(
             //stash includes: 'docs/', name: 'docs'
             sh "docker rm -f ${container_name}"
         }
-        //sh "ls -Rla ${pwd()}/docs/"
+        // store the documents
         stash includes: 'docs/', name: 'docs'
         sh 'git checkout --orphan gh-pages'
         sh 'rm -rf * .gitignore .babelrc' 
         sh 'git rm -f --cached ./'
+        // put documents in current directory
         unstash 'docs'
         sh 'git status'
         sh 'git add docs/*'
         sh 'git add -u ./'
         sh 'ls -la ./'
+        // push new branch
         sshagent(['github-ssh-keys']) {
-
           def command = $/ git config --global user.email 'victor.j.fdez@gmail.com' /$
           sh command
           command = $/ git config --global user.name 'Victor Fernandez' /$
