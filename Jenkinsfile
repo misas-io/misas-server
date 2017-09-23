@@ -131,8 +131,8 @@ podTemplate(
         sh 'git rm -f -r --cached ./'
         // put documents in current directory
         unstash 'docs'
+        sh 'mv docs/* ./ && rm -rf docs/'
         sh 'git status'
-        sh 'git add docs/*'
         sh 'git add -u ./'
         sh 'ls -la ./'
         // push new branch
