@@ -137,12 +137,10 @@ podTemplate(
         sh 'ls -la ./'
         // push new branch
         sshagent(['github-ssh-keys']) {
-          def command = $/ git config --global user.email 'victor.j.fdez@gmail.com' /$
-          sh command
+          sh 'git config --global user.email victor.j.fdez@gmail.com'
           command = $/ git config --global user.name 'Victor Fernandez' /$
           sh command
-          command = $/ git commit -m 'develop docs' /$
-          sh command
+          sh 'git commit -m develop docs'
           sh 'git push -f origin gh-pages' 
         }
       }
