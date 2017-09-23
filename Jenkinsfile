@@ -138,6 +138,7 @@ podTemplate(
         sh 'git checkout --orphan gh-pages'
         sh 'rm -rf *' 
         unstash 'docs'
+        sh 'git status'
         sh 'git add -u docs/*'
         sh 'ls -la ./'
         sshagent(['github-ssh-keys']) {
