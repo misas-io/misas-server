@@ -1,0 +1,53 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    app: {{ template "name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: api
+              containerPort: {{ .Values.service.internalPort }}
+            - name: subscription
+              containerPort: {{ .Values.service.internalPortSubscriptions }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: api 
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: api
+          env:
+          {{- if .Values.deployment.environment }}
+            - name: NODE_ENV
+              value: {{ default "development" .Values.deployment.environment }} 
+          {{- end }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+{{- if .Values.nodeSelector -}}
+          nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+{{- end }}
+          volumeMounts:
+            - mountPath: /usr/src/app/misas.toml
+              subPath: misas.toml
+              name: misas-config
+      volumes:
+        - name: misas-config 
+          configMap:
+            name: {{ template "fullname" . }}-config 
