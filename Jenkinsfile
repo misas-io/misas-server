@@ -128,7 +128,7 @@ podTemplate(
         stash includes: 'docs/', name: 'docs'
         sh 'git checkout --orphan gh-pages'
         sh 'rm -rf * .gitignore .babelrc' 
-        sh 'git rm -f --cached ./'
+        sh 'git rm -f -r --cached ./'
         // put documents in current directory
         unstash 'docs'
         sh 'git status'
