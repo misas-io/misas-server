@@ -136,10 +136,12 @@ podTemplate(
         //sh "ls -Rla ${pwd()}/docs/"
         stash includes: 'docs/', name: 'docs'
         sh 'git checkout --orphan gh-pages'
-        sh 'rm -rf *' 
+        sh 'rm -rf * .gitignore .babelrc' 
+        sh 'git rm -f --cached ./'
         unstash 'docs'
         sh 'git status'
-        sh 'git add -u docs/*'
+        sh 'git add docs/*'
+        sh 'git add -u ./'
         sh 'ls -la ./'
         sshagent(['github-ssh-keys']) {
 
