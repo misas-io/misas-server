@@ -117,9 +117,9 @@ podTemplate(
         def command = $/ ./helm list | grep misas-${branch} /$
         def exitCode = sh script: command, returnStatus: true
         if (exitCode != 0) {
-          sh " ./helm install -f $HOME/values/${branch}.yaml --name misas-${branch} --namespace misas-${branch} misas-${branch}/misas-server "
+          sh " ./helm install -f $HOME/values/${branch}.yaml --namespace misas-${branch} --name misas-${branch} misas-${branch}/misas-server "
         } else {
-          sh " ./helm upgrade -f $HOME/values/${branch}.yaml --name misas-${branch} --namespace misas-${branch} misas-${branch}/misas-server " 
+          sh " ./helm upgrade -f $HOME/values/${branch}.yaml --namespace misas-${branch} misas-${branch} misas-${branch}/misas-server " 
         }
       } 
     }
