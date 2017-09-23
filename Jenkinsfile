@@ -140,7 +140,7 @@ podTemplate(
           sh 'git config --global user.email victor.j.fdez@gmail.com'
           command = $/ git config --global user.name 'Victor Fernandez' /$
           sh command
-          sh 'git commit -m develop docs'
+          sh 'git commit -m "docs"'
           sh 'git push -f origin gh-pages' 
         }
       }
