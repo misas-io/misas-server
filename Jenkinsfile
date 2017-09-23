@@ -133,7 +133,7 @@ podTemplate(
         unstash 'docs'
         sh 'mv docs/* ./ && rm -rf docs/'
         sh 'git status'
-        sh 'git add -u ./'
+        sh 'git add ./'
         sh 'ls -la ./'
         // push new branch
         sshagent(['github-ssh-keys']) {
