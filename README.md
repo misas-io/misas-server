@@ -1,5 +1,7 @@
 # misas-server
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/misas-io/misas-server.svg)](https://greenkeeper.io/)
+
 # Setup
 
 ## Configuration
