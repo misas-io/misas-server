@@ -44,6 +44,7 @@ podTemplate(
   def github_user_email = "victor.j.fdez@gmail.com"
   def github_user_name  = "Victor Fernandez"
   def github_user_username  = "victor755555"
+
   def git_branch_name = env.JOB_BASE_NAME.replace('%2F','/')
   def branch_name = env.JOB_BASE_NAME.replace('%2F','_')
   def container_name = "${env.JOB_BASE_NAME}-${env.BUILD_NUMBER}"
@@ -61,6 +62,7 @@ podTemplate(
             set -x
            '''
         // build the image 
+
         if ([master_branch].contains(branch_name)){    
           sh "docker build -t ${image}:latest -t ${image}:${branch_name} ."
         } else {
